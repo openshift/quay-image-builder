@@ -5,3 +5,5 @@ bucket_name: "danclark-image-builder"
 component_config: "component_config.yaml"
 image_component_config: "image_component_config.json"
 image_recipe_config: "image_recipe_config.json"
+
+keypair: "danclark-personal"

@@ -1,0 +1,13 @@
+---
+
+## Create an Image Distribution Configuration
+aws imagebuilder create-distribution-configuration --cli-input-json file://image_distribution_config.json
+
+## List all distribution configurations
+aws imagebuilder list-distribution-configurations
+
+## Get distribution configuration details
+DIST_CONFIG_ARN=$(aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn')
+
+aws imagebuilder get-distribution-configuration --distribution-configuration-arn $DIST_CONFIG_ARN
+

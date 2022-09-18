@@ -1,0 +1,21 @@
+{
+    "name": "QuayRegistryInfrastructure",
+    "description": "Quay Registry App",
+    "instanceTypes": [
+        "t3.large"
+    ],
+    "instanceProfileName": "QuayRegistryInstanceProfile",
+    "securityGroupIds": [
+        "$DEFAULT_SECURITY_GROUP_ID"
+    ],
+    "subnetId": "$SUBNET_ID",
+    "logging": {
+        "s3Logs": {
+            "s3BucketName": "{{ bucket_name }}",
+            "s3KeyPrefix": "Logs"
+        }
+    },
+    "keyPair": "{{ keypair }}",
+    "terminateInstanceOnFailure": true
+}
+

@@ -1,0 +1,17 @@
+{
+    "name": "HelloWorldPipeline",
+    "description": "Hello World App",
+    "enhancedImageMetadataEnabled": true,
+    "imageRecipeArn": "$IMAGE_RECIPE_ARN",
+    "infrastructureConfigurationArn": "$INFRA_CONF_ARN",
+    "distributionConfigurationArn": "$DIST_CONFIG_ARN",
+    "imageTestsConfiguration": {
+        "imageTestsEnabled": true,
+        "timeoutMinutes": 60
+    },
+    "schedule": {
+        "scheduleExpression": "cron(0 8 1 * ? *)",
+        "pipelineExecutionStartCondition": "EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE"
+    },
+    "status": "ENABLED"
+}

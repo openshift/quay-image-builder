@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cat << EOF > image_pipeline_config.json
+EOF
+ 
+## Create Image pipeline
+aws imagebuilder create-image-pipeline --cli-input-json file://image_pipeline_config.json
+ 
+## List all image pipelines
+aws imagebuilder list-image-pipelines --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]'
+ 
+## Get details on the image pipeline
+PIPELINE_ARN=$(aws imagebuilder list-image-pipelines \
+--filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
+--query 'imagePipelineList[].arn' \
+--output text)
+
+aws imagebuilder get-image-pipeline --image-pipeline-arn $PIPELINE_ARN
