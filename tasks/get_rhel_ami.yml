@@ -1,0 +1,14 @@
+---
+
+  - name: Find RHEL AMI
+    amazon.aws.ec2_ami_info:
+      owners: 309956199498
+      region: 'us-east-1'
+      filters:
+        name: "RHEL-8.6?*HVM-*Hourly*"
+        architecture: "x86_64"
+    register: rhel_ami
+
+  - name: Set RHEL AMI ID Fact
+    ansible.builtin.set_fact:
+      rhel_ami_id: "{{ rhel_ami.images[0].image_id }}"
