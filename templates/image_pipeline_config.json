@@ -1,10 +1,10 @@
 {
-    "name": "HelloWorldPipeline",
-    "description": "Hello World App",
+    "name": "QuayRegistryPipeline",
+    "description": "Quay Registry App",
     "enhancedImageMetadataEnabled": true,
-    "imageRecipeArn": "$IMAGE_RECIPE_ARN",
-    "infrastructureConfigurationArn": "$INFRA_CONF_ARN",
-    "distributionConfigurationArn": "$DIST_CONFIG_ARN",
+    "imageRecipeArn": "{{ image_recipe_arn }}",
+    "infrastructureConfigurationArn": "{{ infra_config_arn }}",
+    "distributionConfigurationArn": "{{ dist_config_arn }}",
     "imageTestsConfiguration": {
         "imageTestsEnabled": true,
         "timeoutMinutes": 60

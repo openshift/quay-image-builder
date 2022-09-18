@@ -2,13 +2,13 @@
     "name": "QuayRegistryInfrastructure",
     "description": "Quay Registry App",
     "instanceTypes": [
-        "t3.large"
+        "{{ instance_type }}"
     ],
     "instanceProfileName": "QuayRegistryInstanceProfile",
     "securityGroupIds": [
-        "$DEFAULT_SECURITY_GROUP_ID"
+        "{{ sg_id }}"
     ],
-    "subnetId": "$SUBNET_ID",
+    "subnetId": "{{ subnet_id }}",
     "logging": {
         "s3Logs": {
             "s3BucketName": "{{ bucket_name }}",
