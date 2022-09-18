@@ -1,13 +1,33 @@
 ---
 
-## Create an Image Distribution Configuration
-aws imagebuilder create-distribution-configuration --cli-input-json file://image_distribution_config.json
+  - name: Cleanup temp files
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - "/tmp/image_distribution_config.json"
+
+  - name: Template Image Component Config
+    ansible.builtin.template:
+      src: image_distribution_config.json.j2
+      dest: /tmp/image_distribution_config.json
+
+  - name: Create Distribution Configuration
+    shell: |
+      aws imagebuilder create-distribution-configuration --cli-input-json file:///tmp/image_distribution_config.json
 
 ## List all distribution configurations
-aws imagebuilder list-distribution-configurations
+#aws imagebuilder list-distribution-configurations
 
-## Get distribution configuration details
-DIST_CONFIG_ARN=$(aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn')
+  # It takes time for the list to update. Wait
+  - name: Pause for 15 seconds to build app cache
+    ansible.builtin.pause:
+      seconds: 15
 
-aws imagebuilder get-distribution-configuration --distribution-configuration-arn $DIST_CONFIG_ARN
+  - name: Get Distribution Configuration ARN
+    shell: |
+      aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn'
+    register: dist_config_arn
+
+#aws imagebuilder get-distribution-configuration --distribution-configuration-arn $DIST_CONFIG_ARN
 
