@@ -13,3 +13,12 @@
 
     - name: Create Component and Recipe
       ansible.builtin.import_tasks: "tasks/create_component.yml"
+
+    - name: Create Distribution
+      ansible.builtin.import_tasks: "tasks/create_distribution.yml"
+
+    - name: Create Infrastructure
+      ansible.builtin.import_tasks: "tasks/create_infrastructure.yml"
+
+    - name: Create Pipeline
+      ansible.builtin.import_tasks: "tasks/create_pipeline.yml"

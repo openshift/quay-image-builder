@@ -1,38 +1,42 @@
 #!/bin/bash
 
-KEY_PAIR="danclark-personal"
+  - name: Cleanup temp files
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - "/tmp/image_infra_config.json"
 
-## Get default VPC, Subnet and SG id
-DEAFULT_VPC_ID=$(aws ec2 describe-vpcs \
---query 'Vpcs[?IsDefault == `true`].VpcId' \
---output text) 
+  - name: Template Image Infra Config
+    ansible.builtin.template:
+      src: image_infra_config.json.j2
+      dest: /tmp/image_infra_config.json
 
-echo "Default VPC: $DEAFULT_VPC_ID"
+  - name: Create infrastructure configuration
+    shell: |
+      aws imagebuilder create-infrastructure-configuration --cli-input-json file:///tmp/image_infra_config.json
 
-SUBNET_ID=$(aws ec2 describe-subnets \
---query 'Subnets[?AvailabilityZone == `ap-south-1a`].SubnetId' \
---output text)
-
-echo "Subnet: $SUBNET_ID"
-
-DEFAULT_SECURITY_GROUP_ID=$(aws ec2 describe-security-groups \
---filters "Name=vpc-id,Values=$DEAFULT_VPC_ID" \
---query 'SecurityGroups[?GroupName == `default`].GroupId' \
---output text) 
-
-echo "Default SG: $DEFAULT_SECURITY_GROUP_ID"
+  # It takes time for the list to update. Wait
+  - name: Pause for 15 seconds to build app cache
+    ansible.builtin.pause:
+      seconds: 15
  
-## Create infrastructure configuration file
-cat << EOF > image_infra_config.json
+### List all infrastructure configurations
+#aws imagebuilder list-infrastructure-configurations
  
-## Create infrastructure configuration
-aws imagebuilder create-infrastructure-configuration \
---cli-input-json file://image_infra_config.json
- 
-## List all infrastructure configurations
-aws imagebuilder list-infrastructure-configurations
- 
-## Get details on Infrastructure configuration
-INFRA_CONF_ARN=$(aws imagebuilder list-infrastructure-configurations | jq -r .infrastructureConfigurationSummaryList[].arn) &&
-aws imagebuilder get-infrastructure-configuration \
---infrastructure-configuration-arn $INFRA_CONF_ARN
+  - name: Get details on Infrastructure configuration
+    shell: |
+      aws imagebuilder list-infrastructure-configurations | jq -r '.infrastructureConfigurationSummaryList[].arn'
+    register: infra_config_info
+
+  - debug:
+      var: infra_config_info
+
+  - fail:
+
+  - name: Set infra_config_arn fact
+    ansible.builtin.set_fact:
+      infra_config_arn: "{{ infra_config_info.arn }}"
+
+#aws imagebuilder get-infrastructure-configuration \
+#--infrastructure-configuration-arn $INFRA_CONF_ARN

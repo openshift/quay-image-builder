@@ -2,17 +2,42 @@
 
 cat << EOF > image_pipeline_config.json
 EOF
+
+ - name: Cleanup temp files
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - "/tmp/image_pipeline_config.json"
+
+  - name: Template Image Infra Config
+    ansible.builtin.template:
+      src: image_pipeline_config.json.j2
+      dest: /tmp/image_pipeline_config.json
+
+  - name: Create Image Pipeline
+    shell: |
+      aws imagebuilder create-image-pipeline --cli-input-json file:///tmp/image_pipeline_config.json
  
-## Create Image pipeline
-aws imagebuilder create-image-pipeline --cli-input-json file://image_pipeline_config.json
- 
+  # It takes time for the list to update. Wait
+  - name: Pause for 15 seconds to build app cache
+    ansible.builtin.pause:
+      seconds: 15
+
 ## List all image pipelines
-aws imagebuilder list-image-pipelines --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]'
+#aws imagebuilder list-image-pipelines --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]'
  
-## Get details on the image pipeline
-PIPELINE_ARN=$(aws imagebuilder list-image-pipelines \
---filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
---query 'imagePipelineList[].arn' \
---output text)
+  - name: Get details on the image pipeline
+    shell: |
+      aws imagebuilder list-image-pipelines \
+        --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
+        --query 'imagePipelineList[].arn' \
+        --output text
+    register: pipeline_info
+
+  - name: Set pipeline_arn fact
+    ansible.builtin.set_fact:
+      pipeline_arn: "{{ pipeline_info.arn }}"
+
 
 aws imagebuilder get-image-pipeline --image-pipeline-arn $PIPELINE_ARN
