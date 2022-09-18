@@ -1,0 +1,67 @@
+name: QuayRegistry
+description: Quay Registry
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: UpdateOS
+        action: ExecuteBash
+        inputs:
+          commands:
+            - sudo dnf -y update
+            - sudo dnf -y install ansible firewalld
+            - sudo systemctl enable --now firewalld
+      - name: PullComponents
+        action: ExecuteBash
+        inputs:
+          commands:
+            - curl -O -L "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/mirror-registry/1.2.6/mirror-registry.tar.gz"
+            - curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.11/openshift-install-linux.tar.gz"
+            - curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.11/openshift-client-linux.tar.gz"
+      - name: SetupComponents
+        action: ExecuteBash
+        inputs:
+          commands:
+            - tar -xzf openshift-install-linux.tar.gz
+            - tar -xzf openshift-client-linux.tar.gz
+            - tar -xzf mirror-registry.tar.gz
+            - rm -f *.gz README
+            - sudo cp openshift-install oc kubectl /usr/local/bin/
+            - pushd /usr/local/bin
+            - sudo chown root.root openshift-install oc kubectl
+            - sudo chmod 0755 openshift-install oc kubectl
+            - sudo restorecon -v openshift-install oc kubectl
+            - popd
+#      - name: InstallQuay
+#        action: ExecuteBash
+#        inputs:
+#          commands:
+#            - 
+#  - name: validate
+#    steps:
+#      - name: ValidateWebServer
+#        action: ExecuteBash
+#        inputs:
+#          commands:
+#            - |
+#              CUR_STATE=$(sudo systemctl is-active httpd)
+#              if [[ $CUR_STATE == "active" ]]; then
+#                  echo "Httpd service is active."
+#                  exit 0
+#              else
+#                  echo "Httpd service is not active."
+#                  exit 1
+#              fi
+#      - name: TestWebServer
+#        action: ExecuteBash
+#        inputs:
+#          commands:
+#            - |
+#              OUTPUT=$(curl -s localhost)
+#              if [[ $OUTPUT == "hello world v1" ]]; then
+#                  echo "Webserver is working fine"
+#                  exit 0
+#              else
+#                  echo "Webserver not working fine"
+#                  exit 0
+#              fi

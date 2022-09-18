@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: false
+  gather_facts: true
+
+  tasks:
+
+    - name: Create S3 Bucket
+      ansible.builtin.import_tasks: "tasks/create_bucket.yml"
+
+    - name: Find RHEL AMI
+      ansible.builtin.import_tasks: "tasks/get_rhel_ami.yml"
+
+    - name: Create Component and Recipe
+      ansible.builtin.import_tasks: "tasks/create_component.yml"

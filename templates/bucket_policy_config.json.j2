@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ImageBuilderPolicy",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::{{ bucket_name }}/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "{{ caller_info.account }}",
+          "s3:x-amz-acl": "bucket-owner-full-control"
+        }
+      }
+    }
+  ]
+}
