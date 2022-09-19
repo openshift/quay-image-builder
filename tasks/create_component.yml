@@ -63,3 +63,17 @@
   - name: Create a custom image recipe
     shell: |
       aws imagebuilder create-image-recipe --cli-input-json file:///tmp/image_recipe_config.json
+
+  # It takes time for the list to update. Wait
+  - name: Pause for 15 seconds for image recipe create
+    ansible.builtin.pause:
+      seconds: 15
+
+  - name: List image recipe
+    shell: |
+      aws imagebuilder list-image-recipes
+    register: image_recipe_info
+
+  - name: Set image_recipe_arn fact
+    set_fact:
+      image_recipe_arn: "{{ image_recipe_info.stdout }}"

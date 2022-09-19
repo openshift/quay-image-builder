@@ -32,11 +32,8 @@
   - debug:
       var: infra_config_info
 
-  - fail:
-
   - name: Set infra_config_arn fact
     ansible.builtin.set_fact:
-      infra_config_arn: "{{ infra_config_info.arn }}"
+      infra_config_arn: "{{ infra_config_info.stdout }}"
 
-#aws imagebuilder get-infrastructure-configuration \
-#--infrastructure-configuration-arn $INFRA_CONF_ARN
+#aws imagebuilder get-infrastructure-configuration --infrastructure-configuration-arn $INFRA_CONF_ARN
