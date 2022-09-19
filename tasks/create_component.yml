@@ -31,7 +31,7 @@
 
   - name: List component build version
     shell: |
-      aws imagebuilder list-components --owner Self | jq -r '.componentVersionList[].arn'
+      aws imagebuilder list-components --owner Self --query 'componentVersionList[].arn' --output text
     register: component_info
 
   - name: Show component version ARN
@@ -44,7 +44,7 @@
 
   - name: Get Component Build Version Arn
     shell: |
-      aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" | jq -r '.componentSummaryList[].arn'
+      aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" --query 'componentSummaryList[].arn' --output text
     register: component_build_info
 
   - name: Show component build version ARN
@@ -71,7 +71,7 @@
 
   - name: List image recipe
     shell: |
-      aws imagebuilder list-image-recipes
+      aws imagebuilder list-image-recipes --query "imageRecipeSummaryList[].arn" --output text
     register: image_recipe_info
 
   - name: Set image_recipe_arn fact

@@ -26,7 +26,7 @@
  
   - name: Get details on Infrastructure configuration
     shell: |
-      aws imagebuilder list-infrastructure-configurations | jq -r '.infrastructureConfigurationSummaryList[].arn'
+      aws imagebuilder list-infrastructure-configurations --query 'infrastructureConfigurationSummaryList[].arn' --output text
     register: infra_config_info
 
   - debug:

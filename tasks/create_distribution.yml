@@ -26,7 +26,7 @@
 
   - name: Get Distribution Configuration ARN
     shell: |
-      aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn'
+      aws imagebuilder list-distribution-configurations --query 'distributionConfigurationSummaryList[].arn' --output text
     register: dist_config_info
 
   - name: Set dist_config_arn fact

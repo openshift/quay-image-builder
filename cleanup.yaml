@@ -24,7 +24,7 @@
 
     - name: Get details on Infrastructure configuration
       shell: |
-        aws imagebuilder list-infrastructure-configurations | jq -r '.infrastructureConfigurationSummaryList[].arn'
+        aws imagebuilder list-infrastructure-configurations --query 'infrastructureConfigurationSummaryList[].arn' --output text
       register: infra_config_info
 
     - name: Set infra_config_arn fact
@@ -39,7 +39,7 @@
 
     - name: Get Distribution Configuration ARN
       shell: |
-        aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn'
+        aws imagebuilder list-distribution-configurations --query 'distributionConfigurationSummaryList[].arn' --output text
       register: dist_config_info
 
     - name: Set dist_config_arn fact
@@ -67,7 +67,7 @@
 
     - name: List component build versions
       shell: |
-        aws imagebuilder list-components --owner Self | jq -r '.componentVersionList[].arn'
+        aws imagebuilder list-components --owner Self --query 'componentVersionList[].arn' --output text
       register: component_info
 
     - name: Set component_version_arn fact
@@ -76,7 +76,7 @@
 
     - name: Get Component Build Version Arn
       shell: |
-        aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" | jq -r '.componentSummaryList[].arn'
+        aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" --query 'componentSummaryList[].arn' --output text
       register: component_build_info
 
     - name: Set component_build_version_arn fact

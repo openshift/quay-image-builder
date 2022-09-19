@@ -1,9 +1,6 @@
 #!/bin/bash
 
-cat << EOF > image_pipeline_config.json
-EOF
-
- - name: Cleanup temp files
+  - name: Cleanup temp files
     ansible.builtin.file:
       path: "{{ item }}"
       state: absent
@@ -20,7 +17,7 @@ EOF
       aws imagebuilder create-image-pipeline --cli-input-json file:///tmp/image_pipeline_config.json
  
   # It takes time for the list to update. Wait
-  - name: Pause for 15 seconds to build app cache
+  - name: Pause for 15 seconds for pipeline to create
     ansible.builtin.pause:
       seconds: 15
 
@@ -30,14 +27,14 @@ EOF
   - name: Get details on the image pipeline
     shell: |
       aws imagebuilder list-image-pipelines \
-        --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
+        --filters '[{"name": "name", "values": ["QuayRegistryPipeline"]}]' \
         --query 'imagePipelineList[].arn' \
         --output text
     register: pipeline_info
 
   - name: Set pipeline_arn fact
     ansible.builtin.set_fact:
-      pipeline_arn: "{{ pipeline_info.arn }}"
+      pipeline_arn: "{{ pipeline_info.stdout }}"
 
 
-aws imagebuilder get-image-pipeline --image-pipeline-arn $PIPELINE_ARN
+#aws imagebuilder get-image-pipeline --image-pipeline-arn $PIPELINE_ARN

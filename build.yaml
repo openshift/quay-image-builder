@@ -21,10 +21,8 @@
     - name: Create Distribution
       ansible.builtin.import_tasks: "tasks/create_distribution.yml"
 
-      # Not tested
     - name: Create Infrastructure
       ansible.builtin.import_tasks: "tasks/create_infrastructure.yml"
 
-      # Not tested
-#    - name: Create Pipeline
-#      ansible.builtin.import_tasks: "tasks/create_pipeline.yml"
+    - name: Create Pipeline
+      ansible.builtin.import_tasks: "tasks/create_pipeline.yml"
