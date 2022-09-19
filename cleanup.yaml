@@ -5,6 +5,24 @@
 
   tasks:
 
+# TODO:
+# delete distribution
+# delete pipeline
+# delete infrastructure
+
+    - name: List image recipe
+      shell: |
+        aws imagebuilder list-image-recipes --owner Self | jq -r '.imageRecipeSummaryList[].arn'
+      register: recipe_info
+
+    - name: Set recipe_arn fact
+      set_fact:
+        recipe_arn: "{{ recipe_info.stdout }}"
+
+    - name: Delete Image Recipe
+      shell: |
+        aws imagebuilder delete-image-recipe --image-recipe-arn "{{ recipe_arn }}"
+
     - name: List component build versions
       shell: |
         aws imagebuilder list-components --owner Self | jq -r '.componentVersionList[].arn'
