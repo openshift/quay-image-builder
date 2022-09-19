@@ -5,7 +5,7 @@
         {
             "region": "us-east-1",
             "amiDistributionConfiguration": {
-                "name": "Name {{ imagebuilder:buildDate }}",
+                "name": "Name {{ '{{ imagebuilder:buildDate }}' }}",
                 "description": "Quay Registry AMI",
                 "amiTags": {
                     "Name": "QuayRegistry"
