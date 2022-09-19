@@ -6,9 +6,50 @@
   tasks:
 
 # TODO:
-# delete distribution
 # delete pipeline
+
+#    - name: Get details on the image pipeline
+#      shell: |
+#        aws imagebuilder list-image-pipelines \
+#          --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
+#          --query 'imagePipelineList[].arn' \
+#          --output text
+#      register: pipeline_info
+
+#    - name: Set pipeline_arn fact
+#      ansible.builtin.set_fact:
+#        pipeline_arn: "{{ pipeline_info.arn }}"
+
 # delete infrastructure
+
+    - name: Get details on Infrastructure configuration
+      shell: |
+        aws imagebuilder list-infrastructure-configurations | jq -r '.infrastructureConfigurationSummaryList[].arn'
+      register: infra_config_info
+
+    - name: Set infra_config_arn fact
+      ansible.builtin.set_fact:
+        infra_config_arn: "{{ infra_config_info.stdout }}"
+
+    - name: Delete Infrastructure configuration
+      shell: |
+        aws imagebuilder delete-infrastructure-configuration --infrastructure-configuration-arn "{{ infra_config_arn }}"
+      ignore_errors: true
+#
+
+    - name: Get Distribution Configuration ARN
+      shell: |
+        aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn'
+      register: dist_config_info
+
+    - name: Set dist_config_arn fact
+      set_fact:
+        dist_config_arn: "{{ dist_config_info.stdout }}"
+
+    - name: Delete Distribution Config
+      shell: |
+        aws imagebuilder delete-distribution-configuration --distribution-configuration-arn "{{ dist_config_arn }}"
+      ignore_errors: true
 
     - name: List image recipe
       shell: |
@@ -22,6 +63,7 @@
     - name: Delete Image Recipe
       shell: |
         aws imagebuilder delete-image-recipe --image-recipe-arn "{{ recipe_arn }}"
+      ignore_errors: true
 
     - name: List component build versions
       shell: |
@@ -44,3 +86,4 @@
     - name: Delete Component Build Version
       shell: |
          aws imagebuilder delete-component --component-build-version-arn "{{ component_build_version_arn }}"
+      ignore_errors: true
