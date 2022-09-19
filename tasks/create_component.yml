@@ -20,11 +20,6 @@
       src: image_component_config.json.j2
       dest: /tmp/image_component_config.json
 
-  - name: Template Image Recipe Config
-    ansible.builtin.template:
-      src: image_recipe_config.json.j2
-      dest: /tmp/image_recipe_config.json
-
   - name: Create the custom component
     shell: |
       aws imagebuilder create-component --cli-input-json file:///tmp/image_component_config.json
@@ -37,20 +32,33 @@
   - name: List component build version
     shell: |
       aws imagebuilder list-components --owner Self | jq -r '.componentVersionList[].arn'
-    register: component_version_arn
+    register: component_info
 
   - name: Show component version ARN
     debug:
-      var: component_version_arn
+      var: component_info
+
+  - name: Set component_version_arn fact
+    set_fact:
+      component_version_arn: "{{ component_info.stdout }}"
 
   - name: Get Component Build Version Arn
     shell: |
-      aws imagebuilder list-component-build-versions --component-version-arn $COMPONENT_VERSION_ARN | jq -r '.componentSummaryList[].arn'
-    register: component_build_version_arn
+      aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" | jq -r '.componentSummaryList[].arn'
+    register: component_build_info
 
   - name: Show component build version ARN
     debug:
-      var: component_build_version_arn
+      var: component_build_info
+
+  - name: Set component_build_version_arn fact
+    set_fact:
+      component_build_version_arn: "{{ component_build_info.stdout }}"
+
+  - name: Template Image Recipe Config
+    ansible.builtin.template:
+      src: image_recipe_config.json.j2
+      dest: /tmp/image_recipe_config.json
 
   - name: Create a custom image recipe
     shell: |

@@ -7,7 +7,7 @@
     loop:
       - "/tmp/image_distribution_config.json"
 
-  - name: Template Image Component Config
+  - name: Template Image Distribution Config
     ansible.builtin.template:
       src: image_distribution_config.json.j2
       dest: /tmp/image_distribution_config.json
@@ -27,7 +27,12 @@
   - name: Get Distribution Configuration ARN
     shell: |
       aws imagebuilder list-distribution-configurations | jq -r '.distributionConfigurationSummaryList[].arn'
-    register: dist_config_arn
+    register: dist_config_info
+
+  - name: Set dist_config_arn fact
+    set_fact:
+      dist_config_arn: "{{ dist_config_info.stdout }}"
+
 
 #aws imagebuilder get-distribution-configuration --distribution-configuration-arn $DIST_CONFIG_ARN
 
