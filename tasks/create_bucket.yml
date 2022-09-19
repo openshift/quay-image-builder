@@ -1,9 +1,5 @@
 ---
 
-  - name: Get the current caller identity information
-    amazon.aws.aws_caller_info:
-    register: caller_info 
-
   - name: Create S3 Bucket
     amazon.aws.s3_bucket:
       name: "{{ bucket_name }}"
