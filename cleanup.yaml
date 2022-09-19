@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: false
+  gather_facts: true
+
+  tasks:
+
+    - name: List component build versions
+      shell: |
+        aws imagebuilder list-components --owner Self | jq -r '.componentVersionList[].arn'
+      register: component_info
+
+    - name: Set component_version_arn fact
+      set_fact:
+        component_version_arn: "{{ component_info.stdout }}"
+
+    - name: Get Component Build Version Arn
+      shell: |
+        aws imagebuilder list-component-build-versions --component-version-arn "{{ component_version_arn }}" | jq -r '.componentSummaryList[].arn'
+      register: component_build_info
+
+    - name: Set component_build_version_arn fact
+      set_fact:
+        component_build_version_arn: "{{ component_build_info.stdout }}"
+
+    - name: Delete Component Build Version
+      shell: |
+         aws imagebuilder delete-component --component-build-version-arn "{{ component_build_version_arn }}"
