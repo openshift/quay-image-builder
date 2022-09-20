@@ -1,0 +1,112 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "username": "{{env `USERNAME`}}",
+    "region": "{{env `AWS_DEFAULT_REGION`}}",
+    "ami_description": "Quay Registry for OCP4",    
+    "purpose": "Quay Registry for OCP4",
+    "os": "RHEL",
+    "os_version": "8",
+    "release": "8.6",
+    "vpc_id": "{{env `DEAFULT_VPC_ID`}}",
+    "subnet_id": "{{env `SUBNET_ID`}}",
+    "source_ami": "{{env `SOURCE_AMI`}} "
+  },
+  "builders": [{
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "ami_name": "Quay Regisry for OCP4 {{isotime \"2006-01-02-150405\"}}",
+    "ami_description": "Quay Registry for OCP4 {{isotime \"2006-01-02-150405\"}}",
+    "instance_type": "t3.large",
+    "source_ami": "ami-06640050dc3f556bb",
+    "type": "amazon-ebs",
+    "region": "{{user `region`}}",
+    "vpc_id": "{{ user `vpc_id` }}",
+    "subnet_id": "{{ user `subnet_id` }}",
+    "associate_public_ip_address": true,
+    "ami_virtualization_type": "hvm",
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sda1",
+        "volume_size": 50,
+        "encrypted": false,
+        "volume_type": "gp2",
+        "delete_on_termination": false
+      }
+    ],
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sda1",
+        "volume_size": 50,
+        "encrypted": false,
+        "volume_type": "gp2",
+        "delete_on_termination": true
+      }
+    ],
+    "ebs_optimized": true,
+    "ena_support": true,
+    "force_delete_snapshot": true,
+    "encrypt_boot": false,
+    "run_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "run_volume_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "ssh_username": "ec2-user",
+    "ssh_pty": "true"
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "bootstrap.sh",
+      "destination": "/tmp/bootstrap.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh '{{.Path}}'",
+      "inline_shebang": "/bin/sh -e -x",
+      "inline": [
+        "echo '*** Running bootstrap.sh script...'",
+        "chmod +x /tmp/bootstrap.sh",
+        "/tmp/bootstrap.sh",
+        "rm -f /tmp/bootstrap.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh '{{.Path}}'",
+      "inline_shebang": "/bin/sh -e -x",
+      "inline": [
+        "echo '** Shreding sensitive data ...'",
+        "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
+        "shred -u /root/.*history /home/*/.*history",
+        "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
+        "sync; sleep 1; sync"
+      ]
+    }
+  ]
+}
+
