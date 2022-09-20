@@ -11,6 +11,8 @@ phases:
             - sudo dnf -y update
             - sudo dnf -y install ansible firewalld
             - sudo systemctl enable --now firewalld
+            - sudo dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            - sudo systemctl enable --now amazon-ssm-agent
       - name: PullComponents
         action: ExecuteBash
         inputs:

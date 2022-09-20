@@ -1,0 +1,9 @@
+---
+
+  - name: Create IAM Role and Instance Profile for EC2 Image Builder
+    community.aws.iam_role:
+      name: "{{ instance_profile }}"
+      assume_role_policy_document: "{{ lookup('file','iam_trust_policy_config.json') }}"
+      description: EC2 Image Builder Role
+      create_instance_profile: true
+      purge_policies: true

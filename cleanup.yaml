@@ -6,19 +6,40 @@
   tasks:
 
 # TODO:
+# delete images in pipeline
+
+    - name: Get images that are part of pipeline
+      shell: |
+        aws imagebuilder list-images --owner Self --query "imageVersionList[].arn" --output text
+      register: images_info
+
+#    - debug:
+#        var: images_info
+
+#    - fail:
+
+#    - name: Delete Images
+#      shell: |
+#        aws imagebuilder delete-image 
+
 # delete pipeline
 
-#    - name: Get details on the image pipeline
-#      shell: |
-#        aws imagebuilder list-image-pipelines \
-#          --filters '[{"name": "name", "values": ["HelloWorldPipeline"]}]' \
-#          --query 'imagePipelineList[].arn' \
-#          --output text
-#      register: pipeline_info
+    - name: Get details on the image pipeline
+      shell: |
+        aws imagebuilder list-image-pipelines \
+          --filters '[{"name": "name", "values": ["QuayRegistryPipeline"]}]' \
+          --query 'imagePipelineList[].arn' \
+          --output text
+      register: pipeline_info
 
-#    - name: Set pipeline_arn fact
-#      ansible.builtin.set_fact:
-#        pipeline_arn: "{{ pipeline_info.arn }}"
+    - name: Set pipeline_arn fact
+      ansible.builtin.set_fact:
+        pipeline_arn: "{{ pipeline_info.stdout }}"
+
+    - name: Delete Image pipeline
+      shell: |
+        aws imagebuilder delete-image-pipeline --image-pipeline-arn "{{ pipeline_arn }}"
+      ignore_errors: true
 
 # delete infrastructure
 

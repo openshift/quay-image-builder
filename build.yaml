@@ -9,6 +9,9 @@
       amazon.aws.aws_caller_info:
       register: caller_info
 
+    - name: Create IAM Role and Profile
+      ansible.builtin.import_tasks: "tasks/create_iam.yml"
+
     - name: Create S3 Bucket
       ansible.builtin.import_tasks: "tasks/create_bucket.yml"
 

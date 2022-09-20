@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: false
+  gather_facts: true
+
+  tasks:
+
+    - name: Get details on the image pipeline
+      shell: |
+        aws imagebuilder list-image-pipelines \
+          --filters '[{"name": "name", "values": ["QuayRegistryPipeline"]}]' \
+          --query 'imagePipelineList[].arn' \
+          --output text
+      register: pipeline_info
+
+    - name: Set pipeline_arn fact
+      ansible.builtin.set_fact:
+        pipeline_arn: "{{ pipeline_info.stdout }}"
+
+    - name: Start image pipeline execution
+      shell: |
+        aws imagebuilder start-image-pipeline-execution --image-pipeline-arn "{{ pipeline_arn }}"
+ 
+## It may take upto 30 mins or more to build, validate and test the new image
+ 
+## Check image pipeline image build status
+#aws imagebuilder list-image-pipeline-images \
+#--image-pipeline-arn $PIPELINE_ARN | jq -r .imageSummaryList[].state.status
+ 
+## List image pipeline images
+#aws imagebuilder list-image-pipeline-images \
+#--image-pipeline-arn $PIPELINE_ARN
+ 
+## Get AMI ID and Snapshot ID
+#AMI_ID=$(aws imagebuilder list-image-pipeline-images \
+#--image-pipeline-arn $PIPELINE_ARN | jq -r .imageSummaryList[].outputResources.amis[].image) &&
+#echo $AMI_ID &&
+#SNAPSHOT_ID=$(aws ec2 describe-images \
+#--image-ids $AMI_ID | jq -r .Images[].BlockDeviceMappings[].Ebs.SnapshotId) &&
+#echo $SNAPSHOT_ID
