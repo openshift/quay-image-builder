@@ -91,6 +91,11 @@
     },
     {
       "type": "file",
+      "source": "/home/danclark/pull-secret.txt",
+      "destination": "/tmp/pull-secret.txt"
+    },
+    {
+      "type": "file",
       "source": "imageset-config.yaml",
       "destination": "/tmp/imageset-config.yaml"
     },

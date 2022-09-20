@@ -9,7 +9,7 @@ echo "Bootstrap script..."
 
 # TODO: Commented out for testing
 # Install updates
-#sudo dnf -y update
+sudo dnf -y update
 
 # Install ansible
 sudo dnf -y install ansible
@@ -43,13 +43,20 @@ popd
 sudo dnf -y install podman firewalld
 sudo systemctl enable --now firewalld
 
+mkdir /run/user/$(id -u)/containers || true
+mv /tmp/pull-secret.txt /run/user/$(id -u)/containers/auth.json
+
 sudo mkdir /opt/quay
 sudo ./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
 
-USER=$(grep -Pzo credentials.* log | sed 's|credentials ||' | tr -d ' ' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}')
-PASS=$(grep -Pzo credentials.* log | sed 's|credentials ||' | tr -d ' ' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}')
-podman login --tls-verify=false -u=${USER} -p=${PASS} localhost:8443
+REG_USER=$(grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}' | tr -d '\n')
+
+REG_PASS=$(grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}' | tr -d '\n')
+
+podman login --tls-verify=false -u=${REG_USER} -p=${REG_PASS} localhost:8443
 
 oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://localhost:8443
+
+rm -f /run/user/$(id -u)/containers/auth.json
 
 exit 0

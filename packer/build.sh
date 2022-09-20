@@ -2,6 +2,8 @@
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
 
+export PULL_SECRET="/home/danclark/pull-secret.txt"
+
 if [ -z $AWS_ACCESS_KEY_ID ];
 then
   export AWS_ACCESS_KEY_ID=`aws --profile $AWS_PROFILE configure get aws_access_key_id`
@@ -26,6 +28,10 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners 309956199498 --region us-ea
 ansible-galaxy role install redhatofficial.rhel8_stig
 
 packer build ${PACKER_TEMPLATE}
+
+exit 0
+
+# Below code does not work correctly
 
 echo "Waiting 1 minute before cleaning up extra resources..."
 sleep 60
