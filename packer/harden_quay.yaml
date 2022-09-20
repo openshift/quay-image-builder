@@ -12,3 +12,4 @@
         low_severity: false
         unknown_severity: false
         enable_fips_mode: true
+        sudo_remove_nopasswd: false
