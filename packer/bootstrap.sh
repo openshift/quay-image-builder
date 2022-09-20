@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 OCP_VER="4.11"
 
@@ -31,6 +31,7 @@ tar -xzf mirror-registry.tar.gz
 tar -xzf oc-mirror.tar.gz
 rm -f openshift-install-linux.tar.gz  
 rm -f openshift-client-linux.tar.gz
+rm -f oc-mirror.tar.gz
 rm -f README.md
 sudo mv -f openshift-install oc kubectl oc-mirror /usr/local/bin/
 pushd /usr/local/bin
@@ -43,6 +44,12 @@ sudo dnf -y install podman firewalld
 sudo systemctl enable --now firewalld
 
 sudo mkdir /opt/quay
-#sudo ./mirror-registry install --verbose --quayRoot /opt/quay/
+sudo ./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
+
+USER=$(grep -Pzo credentials.* log | sed 's|credentials ||' | tr -d ' ' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}')
+PASS=$(grep -Pzo credentials.* log | sed 's|credentials ||' | tr -d ' ' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}')
+podman login --tls-verify=false -u=${USER} -p=${PASS} localhost:8443
+
+oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://localhost:8443
 
 exit 0

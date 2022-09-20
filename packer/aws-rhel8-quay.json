@@ -90,6 +90,11 @@
       "destination": "/tmp/harden_quay.yaml"
     },
     {
+      "type": "file",
+      "source": "imageset-config.yaml",
+      "destination": "/tmp/imageset-config.yaml"
+    },
+    {
       "type": "shell",
       "execute_command": "sudo -S sh '{{.Path}}'",
       "inline_shebang": "/bin/sh -e -x",

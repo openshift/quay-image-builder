@@ -1,0 +1,47 @@
+apiVersion: mirror.openshift.io/v1alpha2
+kind: ImageSetConfiguration
+storageConfig:
+  registry:
+    imageURL: localhost:8443/mirror-state:latest # Stores metadata in an image
+    skipTLS: true # Disable TLS certificate checking or use plain HTTP 
+mirror:
+  platform:
+    channels:
+      - name: stable-4.11 # References latest stable release
+    graph: true # Include Cincinnati upgrade graph image in imageset
+  operators:
+    - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.11
+      packages:
+        - name: advanced-cluster-management
+        - name: ansible-automation-platform-operator
+        - name: cincinnati-operator
+        - name: cluster-logging
+        - name: compliance-operator
+        - name: elasticsearch-operator
+        - name: file-integrity-operator
+        - name: mcg-operator
+        - name: nfd
+        - name: rhacs-operator
+        - name: rhsso-operator
+#        - name: costmanagement-metrics-operator
+#        - name: mtc-operator
+#        - name: mtv-operator
+#        - name: multicluster-engine
+#        - name: node-healthcheck-operator
+#        - name: node-maintenance-operator
+#        - name: node-observability-operator
+#        - name: numaresources-operator
+#        - name: odf-multicluster-orchestrator
+#        - name: odr-cluster-operator
+#        - name: odr-hub-operator
+#        - name: openshift-cert-manager-operator
+#        - name: openshift-custom-metrics-autoscaler-operator
+#        - name: openshift-gitops-operator
+#        - name: openshift-pipelines-operator-rh
+#        - name: openshift-secondary-scheduler-operator
+#        - name: openshift-special-resource-operator
+#        - name: quay-bridge-operator
+#        - name: quay-operator
+#        - name: redhat-oadp-operator
+#        - name: rh-service-binding-operator
+#        - name: serverless-operator
