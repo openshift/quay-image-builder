@@ -23,11 +23,13 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners 309956199498 --region us-ea
   --output text --query 'Images[*].[ImageId]' \
   --filters "Name=name,Values=RHEL-8.6?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
 
+ansible-galaxy role install redhatofficial.rhel8_stig
+
 packer build ${PACKER_TEMPLATE}
 
 echo "Waiting 1 minute before cleaning up extra resources..."
 sleep 60
-VOL_ID=`aws --region ${AWS_DEFAULT_REGION} ec2 describe-volumes --filters='Name=status,Values=available,Name=tag-key,Values="Builder",Name=tag-value,Values="Packer*"' --query 'Volumes[*].{VolumeId:VolumeId}' --output text`
+VOL_ID=`aws --region ${AWS_DEFAULT_REGION} ec2 describe-volumes --filters='Name=status,Values=available Name=tag-key,Values="Builder" Name=tag-value,Values="Packer*"' --query 'Volumes[*].{VolumeId:VolumeId}' --output text`
 echo "Deleting unattached volume id ${VOL_ID}..."
 for V_ID in $VOL_ID
 do

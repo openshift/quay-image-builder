@@ -85,6 +85,11 @@
       "destination": "/tmp/bootstrap.sh"
     },
     {
+      "type": "file",
+      "source": "harden_quay.yaml",
+      "destination": "/tmp/harden_quay.yaml"
+    },
+    {
       "type": "shell",
       "execute_command": "sudo -S sh '{{.Path}}'",
       "inline_shebang": "/bin/sh -e -x",

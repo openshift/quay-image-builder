@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  become: true
+  gather_facts: true
+  connection: local
+  roles:
+
+    - role: redhatofficial.rhel8_stig
+      vars:
+        high_severity: true
+        medium_severity: true
+        low_severity: false
+        unknown_severity: false
+        enable_fips_mode: true
