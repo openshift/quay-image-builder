@@ -14,8 +14,13 @@
 
     - name: Stop Quay service
       systemd:
-        name: quay-pod.service
+        name: "{{ item }}"
         state: stopped
+      loop:
+        - "quay-app.service"
+        - "quay-redis.service"
+        - "quay-postgres.service"
+        - "quay-app.service"
 
     - name: Change SERVER_HOSTNAME in quay config to current hostname
       ansible.builtin.lineinfile:
@@ -159,3 +164,13 @@
       systemd:
         name: quay-pod.service
         state: started
+
+    - name: Start Quay service
+      systemd:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - "quay-pod.service"
+        - "quay-postgres.service"
+        - "quay-redis.service"
+        - "quay-app.service"
