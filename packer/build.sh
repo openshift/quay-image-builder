@@ -6,11 +6,13 @@ export PULL_SECRET="/home/danclark/pull-secret.txt"
 
 if [ -z $AWS_ACCESS_KEY_ID ];
 then
-  export AWS_ACCESS_KEY_ID=`aws --profile $AWS_PROFILE configure get aws_access_key_id`
+  echo "AWS_ACCESS_KEY_ID Required"
+  exit 1
 fi
 if [ -z $AWS_SECRET_ACCESS_KEY ];
 then
-  export AWS_SECRET_ACCESS_KEY=`aws --profile $AWS_PROFILE configure get aws_secret_access_key`
+  echo "AWS_SECRET_ACCESS_KEY Required"
+  exit 1
 fi
 
 export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
