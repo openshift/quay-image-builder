@@ -50,7 +50,15 @@ mkdir -p /opt/quay || true
 ./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
 mv mirror-registry /usr/local/bin/mirror-registry
 restorecon -v /usr/local/bin/mirror-registry
-#rm -f mirror-registry.tar.gz
+
+# Add quay certificate to the trust store
+rm -f /etc/pki/ca-trust/source/anchors/quay.cert
+cp /opt/quay/quay-config/ssl.cert /etc/pki/ca-trust/source/anchors/quay.cert
+chmod 0644 /etc/pki/ca-trust/source/anchors/quay.cert
+restorecon -v /etc/pki/ca-trust/source/anchors/quay.cert
+update-ca-trust
+update-ca-trust extract
+
 
 # Cleanup
 # TODO: For testing, don't remove files

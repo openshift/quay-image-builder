@@ -133,7 +133,28 @@
             mode: u=rw,g=r,o=r
             owner: root
             group: root
+
+    - name: Remove existing certificate copies
+      file:
+        path: '{{ item }}'
+        state: absent
+      with_items:
+        - '/etc/pki/ca-trust/source/anchors/quay.cert"'
     
+    # Make sure to trust the self signed cert we just made
+    - name: Copy self signed cert to registry's PKI trust
+      become: true
+      copy:
+        src: "{{ quay_root }}/quay-config/ssl.cert"
+        dest: '/etc/pki/ca-trust/source/anchors/quay.cert'
+        remote_src: true
+    
+    - name: update registry trusted ca
+      command: update-ca-trust
+    
+    - name: update registry trusted ca extract
+      command: update-ca-trust extract
+
     - name: Start Quay service
       systemd:
         name: quay-pod.service
