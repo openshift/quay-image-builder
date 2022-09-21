@@ -1,62 +1,70 @@
 #!/bin/bash -e
 
+# URIs to make scripts lines shorter
+DEV_URI="https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"
+MIRROR_URI="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
+
 OCP_VER="4.11"
 
 echo "Bootstrap script..."
 # Enter any additional commands or package installs here
 
-#sudo dnf clean all
+#dnf clean all
 
 # TODO: Commented out for testing
 # Install updates
-sudo dnf -y update
+#dnf -y update
 
 # Install ansible
-sudo dnf -y install ansible
+dnf -y install ansible podman firewalld git vim python3 jq
+systemctl enable --now firewalld
 
-# Install ansibl roles
-ansible-galaxy role install redhatofficial.rhel8_stig
+# Upgrade pip
+pip3 install --upgrade pip
 
+# TODO: Add hardening 
 #ansible-playbook /tmp/harden_quay.yaml
 
 # Pull OCP Dependencies
-curl -O -L "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/mirror-registry/1.2.6/mirror-registry.tar.gz"
-curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OCP_VER}/openshift-install-linux.tar.gz"
-curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OCP_VER}/openshift-client-linux.tar.gz"
-curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-${OCP_VER}/oc-mirror.tar.gz"
+curl -O -L "${DEV_URI}/mirror-registry/1.2.6/mirror-registry.tar.gz"
+curl -O -L "${MIRROR_URI}/ocp/latest-${OCP_VER}/openshift-install-linux.tar.gz"
+curl -O -L "${MIRROR_URI}/ocp/latest-${OCP_VER}/openshift-client-linux.tar.gz"
+curl -O -L "${MIRROR_URI}/ocp/latest-${OCP_VER}/oc-mirror.tar.gz"
+curl -O -L "${MIRROR_URI}/pipeline/latest/tkn-linux-amd64.tar.gz"
+curl -O -L "${DEV_URI}/odo/v2.5.1/odo-linux-amd64"
 
 tar -xzf openshift-install-linux.tar.gz
 tar -xzf openshift-client-linux.tar.gz
-tar -xzf mirror-registry.tar.gz
 tar -xzf oc-mirror.tar.gz
-rm -f openshift-install-linux.tar.gz  
-rm -f openshift-client-linux.tar.gz
-rm -f oc-mirror.tar.gz
-rm -f README.md
-sudo mv -f openshift-install oc kubectl oc-mirror /usr/local/bin/
+tar -xzf tkn-linux-amd64.tar.gz
+mv -f openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64 /usr/local/bin/
 pushd /usr/local/bin
-sudo chown root.root openshift-install oc kubectl oc-mirror
-sudo chmod 0755 openshift-install oc kubectl oc-mirror
-sudo restorecon -v openshift-install oc kubectl oc-mirror
+chown root.root openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
+chmod 0755 openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
+restorecon -v openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
 popd
 
-sudo dnf -y install podman firewalld
-sudo systemctl enable --now firewalld
+# Mirror registry setup
+tar -xzf mirror-registry.tar.gz
+mkdir -p /opt/quay || true
+./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
+mv mirror-registry /usr/local/bin/mirror-registry
+restorecon -v /usr/local/bin/mirror-registry
+#rm -f mirror-registry.tar.gz
 
-mkdir /run/user/$(id -u)/containers || true
-mv /tmp/pull-secret.txt /run/user/$(id -u)/containers/auth.json
-
-sudo mkdir /opt/quay
-sudo ./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
-
-REG_USER=$(grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}' | tr -d '\n')
-
-REG_PASS=$(grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}' | tr -d '\n')
-
-podman login --tls-verify=false -u=${REG_USER} -p=${REG_PASS} localhost:8443
-
-oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://localhost:8443
-
-rm -f /run/user/$(id -u)/containers/auth.json
+# Cleanup
+# TODO: For testing, don't remove files
+#rm -f openshift-install-linux.tar.gz
+#rm -f openshift-client-linux.tar.gz
+#rm -f oc-mirror.tar.gz
+#rm -f tkn-linux-amd64.tar.gz
+#rm -f README.md
+#rm -f mirror-registry.tar.gz
+#rm -f execution-environment.tar
+#rm -f image-archive.tar
+#rm -f pause.tar
+#rm -f postgres.tar
+#rm -f quay.tar
+#rm -f redis.tar
 
 exit 0

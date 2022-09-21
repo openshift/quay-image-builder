@@ -29,7 +29,7 @@
     "ami_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 50,
+        "volume_size": 200,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": false
@@ -38,7 +38,7 @@
     "launch_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 50,
+        "volume_size": 200,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": true
@@ -86,6 +86,11 @@
     },
     {
       "type": "file",
+      "source": "setup.sh",
+      "destination": "/tmp/setup.sh"
+    },
+    {
+      "type": "file",
       "source": "harden_quay.yaml",
       "destination": "/tmp/harden_quay.yaml"
     },
@@ -106,8 +111,19 @@
       "inline": [
         "echo '*** Running bootstrap.sh script...'",
         "chmod +x /tmp/bootstrap.sh",
-        "/tmp/bootstrap.sh",
-        "rm -f /tmp/bootstrap.sh"
+        "/tmp/bootstrap.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sh '{{.Path}}'",
+      "inline_shebang": "/bin/sh -e -x",
+      "inline": [
+        "echo '*** Running setup.sh script...'",
+        "echo -n 'Who am I: '",
+        "id -u",
+        "chmod +x /tmp/setup.sh",
+        "/tmp/setup.sh"
       ]
     },
     {
