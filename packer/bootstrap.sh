@@ -37,11 +37,11 @@ tar -xzf openshift-install-linux.tar.gz
 tar -xzf openshift-client-linux.tar.gz
 tar -xzf oc-mirror.tar.gz
 tar -xzf tkn-linux-amd64.tar.gz
-mv -f openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64 /usr/local/bin/
+mv -f openshift-install oc kubectl oc-mirror tkn tkn-pac odo-linux-amd64 /usr/local/bin/
 pushd /usr/local/bin
-chown root.root openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
-chmod 0755 openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
-restorecon -v openshift-install oc kubectl oc-mirror tkn tkc-pac odo-linux-amd64
+chown root.root openshift-install oc kubectl oc-mirror tkn tkn-pac odo-linux-amd64
+chmod 0755 openshift-install oc kubectl oc-mirror tkn tkn-pac odo-linux-amd64
+restorecon -v openshift-install oc kubectl oc-mirror tkn tkn-pac odo-linux-amd64
 popd
 
 # Mirror registry setup
@@ -67,6 +67,7 @@ update-ca-trust extract
 #rm -f oc-mirror.tar.gz
 #rm -f tkn-linux-amd64.tar.gz
 #rm -f README.md
+#rm -f LICENSE
 #rm -f mirror-registry.tar.gz
 #rm -f execution-environment.tar
 #rm -f image-archive.tar
