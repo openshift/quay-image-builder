@@ -6,9 +6,6 @@
   vars:
     quay_root: "/opt/quay"
     quay_hostname: "quay:8443"
-#    key_name: "ssl.key"
-#    key_size: 2048
-#    key_type: "RSA"
 
   tasks:
 
@@ -27,41 +24,6 @@
         path: "{{ quay_root }}/quay-config/config.yaml"
         regexp: '^SERVER_HOSTNAME:.*'
         line: "SERVER_HOSTNAME: {{ ansible_env.HOSTNAME }}:8443"
-
-#- name: Create necessary directory for Quay local storage
-#  ansible.builtin.file:
-#    path: "{{ quay_root }}/quay-storage"
-#    state: directory
-#    recurse: yes
-#
-#- name: Create necessary directory for Quay config bundle
-#  ansible.builtin.file:
-#    path: "{{ quay_root }}/quay-config"
-#    state: directory
-#    recurse: yes
-#
-#- name: Set permissions on local storage directory
-#  ansible.posix.acl:
-#    path: "{{ quay_root }}/quay-storage"
-#    entry: u:1001:-wx
-#    state: present
-#
-#- name: Copy Quay config.yaml file
-#  template:
-#    src: ../templates/config.yaml.j2
-#    dest: "{{ quay_root }}/quay-config/config.yaml"
-#
-#- name: Check if SSL Cert exists
-#  stat:
-#    path: /runner/certs/quay.cert
-#  delegate_to: localhost
-#  register: ssl_cert
-#
-#- name: Check if SSL Key exists
-#  stat:
-#    path: /runner/certs/quay.key
-#  delegate_to: localhost
-#  register: ssl_key
 
     - name: Remove existing certs
       file:
@@ -109,19 +71,6 @@
     
         - name: Replace ssl cert with chain cert
           command: mv --force {{ quay_root }}/quay-config/chain.cert {{ quay_root }}/quay-config/ssl.cert
-
-#- name: Copy SSL Certs
-#  block:
-#    - name: Copy SSL certificate
-#      copy:
-#        src: /runner/certs/quay.cert
-#        dest: "{{ quay_root }}/quay-config/ssl.cert"
-#
-#    - name: Copy SSL key
-#      copy:
-#        src: /runner/certs/quay.key
-#        dest: "{{ quay_root }}/quay-config/ssl.key"
-#  when: (ssl_cert.stat.exists == True) and (ssl_key.stat.exists == True)
 
     - name: Set certificate permissions
       block:
