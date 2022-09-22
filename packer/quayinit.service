@@ -1,0 +1,10 @@
+[Unit]
+Description=Configure Quay on Firstboot
+ConditionFirstBoot=yes
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/firstboot.sh
+
+[Install]
+WantedBy=multi-user.target
