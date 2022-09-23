@@ -1,0 +1,81 @@
+---
+- hosts: default
+  become: false
+  gather_facts: true
+
+  tasks:
+
+    - name: Install collections
+      community.general.ansible_galaxy_install:
+        type: collection
+        name:
+          - "amazon.aws"
+          - "commnity.aws"
+          - "community.crypto"
+    
+    - name: Install roles
+      community.general.ansible_galaxy_install:
+        type: role
+        name:
+          - "redhatofficial.rhel8_stig"
+    
+    - name: Read-write git checkout from github
+      ansible.builtin.git:
+        repo: https://github.com/RedHatGov/openshift4-c2s.git
+        dest: "{{ ansible_env.HOME }}"
+    
+    - name: Install bottle for Python 3.3 specifically, using the 'pip3.3' executable
+      ansible.builtin.pip:
+        name:
+          - "wheel"
+          - "jinja2"
+          - "awscli"
+        executable: pip3
+        extra_args: "--user"
+    
+    - name: Create containers directory
+      file:
+        path: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers"
+        state: directory
+    
+    - name: Copy pull secret
+      file:
+        src: "pull-secret.txt"
+        dest: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
+    
+    - name: Get Registry Username
+      shell: |
+        grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}' | tr -d '\n'
+      register: reg_user_info
+    
+    - name: Get Registry Password
+      shell: |
+        grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}' | tr -d '\n'
+      register: reg_pass_info
+    
+    - name: Set registry username and password facts
+      set_fact:
+        reg_user: "{{ reg_user_info.stdout }}"
+        reg_pass: "{{ reg_pass_info.stdout }}"
+    
+    - name: Login to default registry and create ${XDG_RUNTIME_DIR}/containers/auth.json
+      containers.podman.podman_login:
+        username: "{{ reg_user }}"
+        password: "{{ reg_pass }}"
+        registry: "{{ ansible_env.HOSTNAME }}:8443"
+        tlsverify: false
+    
+    - name: Replace localhost with actual hostname
+      ansible.builtin.replace:
+        path: /tmp/imageset-config.yaml
+        regexp: localhost
+        replace: "{{ ansible_env.HOSTNAME }}"
+    
+#    - name: Mirror content
+#      shell: |
+#        /usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://{{ ansible_env.HOSTNAME }}:8443
+    
+    - name: Remove credentials
+      file:
+        path: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
+        state: absent
