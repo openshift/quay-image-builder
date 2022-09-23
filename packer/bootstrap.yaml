@@ -1,7 +1,8 @@
 ---
-- hosts: default
+- hosts: localhost
   become: true
   gather_facts: true
+  connection: local
   vars:
     dev_uri: "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"
     mirror_uri: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
@@ -14,14 +15,15 @@
       shell: dnf clean all
     
     # TODO: Commented out for testing
-    - name: Update all packages
-      ansible.builtin.dnf:
-        name: "*"
-        state: latest
+#    - name: Update all packages
+#      ansible.builtin.dnf:
+#        name: "*"
+#        state: latest
     
     - name: Install required packages
       ansible.builtin.dnf:
         name:
+          - ansible
           - podman
           - firewalld
           - git
@@ -48,11 +50,12 @@
       ansible.builtin.unarchive:
         src: "{{ item }}"
         dest: /usr/local/bin
+        remote_src: true
       loop:
         - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-${OCP_VER}/openshift-install-linux.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-${OCP_VER}/openshift-client-linux.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-${OCP_VER}/oc-mirror.tar.gz"
+        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-install-linux.tar.gz"
+        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-client-linux.tar.gz"
+        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
     - name: Download odo
@@ -65,10 +68,11 @@
     
     - name: Change file ownership, group and permissions
       ansible.builtin.file:
-        path: "{{ item }}"
+        path: "/usr/local/bin/{{ item }}"
         owner: root
         group: root
         mode: 0755
+        state: file
       loop:
         - openshift-install
         - oc
@@ -96,28 +100,25 @@
         path: "{{ quay_root }}"
         state: directory
     
-    # Mirror registry setup
-    ./mirror-registry install --verbose --quayRoot /opt/quay/ | tee mirror-registry.log
-    
-    - name: Remove existing quay certs from system trust store
-      file:
-        path: /etc/pki/ca-trust/source/anchors/quay.cert
-        state: absent
-    
-    - name: Copy quay cert to system trust store
-      copy:
-        src: /opt/quay/quay-config/ssl.cert
-        dest: /etc/pki/ca-trust/source/anchors/quay.cert
-        remote_src: true
-        owner: root
-        group: root
-        mode: 0644
-    
-    - name: Update system trust store
-      ansible.builtin.command: update-ca-trust
-    
-    - name: Extract system trust store
-      ansible.builtin.command: update-ca-trust extract
+#    - name: Remove existing quay certs from system trust store
+#      file:
+#        path: /etc/pki/ca-trust/source/anchors/quay.cert
+#        state: absent
+#    
+#    - name: Copy quay cert to system trust store
+#      copy:
+#        src: /opt/quay/quay-config/ssl.cert
+#        dest: /etc/pki/ca-trust/source/anchors/quay.cert
+#        remote_src: true
+#        owner: root
+#        group: root
+#        mode: 0644
+#    
+#    - name: Update system trust store
+#      ansible.builtin.command: update-ca-trust
+#    
+#    - name: Extract system trust store
+#      ansible.builtin.command: update-ca-trust extract
     
     #- name: Cleanup files
     #  file:

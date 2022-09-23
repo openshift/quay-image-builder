@@ -45,12 +45,12 @@
     
     - name: Get Registry Username
       shell: |
-        grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}' | tr -d '\n'
+        grep -o credentials.* /var/log/mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $1}' | tr -d '\n'
       register: reg_user_info
     
     - name: Get Registry Password
       shell: |
-        grep -o credentials.* mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}' | tr -d '\n'
+        grep -o credentials.* /var/log/mirror-registry.log | sed 's|credentials ||' | tr -d ' ' | tr -d '"' | tr -d '(' | tr -d ')' | awk -F\, '{print $2}' | tr -d '\n'
       register: reg_pass_info
     
     - name: Set registry username and password facts

@@ -91,11 +91,6 @@
     },
     {
       "type": "file",
-      "source": "harden_quay.yaml",
-      "destination": "/tmp/harden_quay.yaml"
-    },
-    {
-      "type": "file",
       "source": "/home/danclark/pull-secret.txt",
       "destination": "/tmp/pull-secret.txt"
     },
@@ -105,14 +100,42 @@
       "destination": "/tmp/imageset-config.yaml"
     },
     {
+      "type": "file",
+      "source": "playbooks",
+      "destination": "/tmp"
+    },
+    {
+      "type": "file",
+      "source": "quayinit.service",
+      "destination": "/tmp/quayinit.service"
+    },
+    {
+      "type": "file",
+      "source": "firstboot.sh",
+      "destination": "/tmp/firstboot.sh"
+    },
+    {
       "type": "shell",
       "execute_command": "sudo -S sh '{{.Path}}'",
       "inline_shebang": "/bin/sh -e -x",
       "inline": [
         "echo '*** Running bootstrap.sh script...'",
         "chmod +x /tmp/bootstrap.sh",
-        "/tmp/bootstrap.sh"
+        "dnf -y install ansible",
+        "#/tmp/bootstrap.sh",
+        "#/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
+        "mv /tmp/firstboot.sh /usr/local/bin/firstboot.sh",
+        "chmod +x /usr/local/bin/firstboot.sh",
+        "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
+        "chmod 0644 /etc/systemd/system/quayinit.service",
+        "systemctl enable quayinit.service",
+        "#ls -l /usr/local/bin/",
+        "#ls -l /home/ec2-user/"
       ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "./bootstrap.yaml"
     },
     {
       "type": "shell",
@@ -123,7 +146,7 @@
         "echo -n 'Who am I: '",
         "id -u",
         "chmod +x /tmp/setup.sh",
-        "/tmp/setup.sh"
+        "#/tmp/setup.sh"
       ]
     },
     {
@@ -135,6 +158,7 @@
         "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
         "shred -u /root/.*history /home/*/.*history",
         "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
+        "rm -f /etc/machine-id",
         "sync; sleep 1; sync"
       ]
     }
