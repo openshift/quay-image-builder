@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  become: true
+  become: false
   gather_facts: true
   connection: local
   vars:
@@ -8,19 +8,24 @@
     mirror_uri: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
     ocp_ver: "4.11"
     quay_root: /opt/quay
+    reg_user: "init"
+    reg_pass: "openshift"
 
   tasks:
 
-    - name: Clean dnf cache
-      shell: dnf clean all
+#    - name: Clean dnf cache
+#      become: true
+#      shell: dnf clean all
     
     # TODO: Commented out for testing
 #    - name: Update all packages
+#      become: true
 #      ansible.builtin.dnf:
 #        name: "*"
 #        state: latest
     
     - name: Install required packages
+      become: true
       ansible.builtin.dnf:
         name:
           - ansible
@@ -32,12 +37,23 @@
           - jq
     
     - name: Enable firewalld service
+      become: true
       ansible.builtin.systemd:
         name: firewalld
         state: started
         enabled: true
+
+    - name: Configure firewall ports
+      become: true
+      ansible.posix.firewalld:
+        port: "8443/tcp"
+        permanent: true
+        immediate: true
+        state: enabled
+        zone: "public"
     
     - name: Update pip
+      become: true
       ansible.builtin.pip:
         name: pip
         state: latest
@@ -47,6 +63,7 @@
     #ansible-playbook /tmp/harden_quay.yaml
     
     - name: Pull OCP Dependencies
+      become: true
       ansible.builtin.unarchive:
         src: "{{ item }}"
         dest: /usr/local/bin
@@ -59,6 +76,7 @@
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
     - name: Download odo
+      become: true
       ansible.builtin.get_url:
         url: "{{ item }}"
         dest: /usr/local/bin/odo
@@ -67,6 +85,7 @@
         - "{{ dev_uri }}/odo/v2.5.1/odo-linux-amd64"
     
     - name: Change file ownership, group and permissions
+      become: true
       ansible.builtin.file:
         path: "/usr/local/bin/{{ item }}"
         owner: root
@@ -84,6 +103,7 @@
         - mirror-registry
     
     - name: Restore SELinux context
+      become: true
       ansible.builtin.command: restorecon -v /usr/local/bin/{{ item }}
       loop:
         - openshift-install
@@ -96,16 +116,19 @@
         - mirror-registry
     
     - name: Create quay directory
+      become: true
       file:
         path: "{{ quay_root }}"
         state: directory
     
 #    - name: Remove existing quay certs from system trust store
+#      become: true
 #      file:
 #        path: /etc/pki/ca-trust/source/anchors/quay.cert
 #        state: absent
 #    
 #    - name: Copy quay cert to system trust store
+#      become: true
 #      copy:
 #        src: /opt/quay/quay-config/ssl.cert
 #        dest: /etc/pki/ca-trust/source/anchors/quay.cert
@@ -115,21 +138,119 @@
 #        mode: 0644
 #    
 #    - name: Update system trust store
+#      become: true
 #      ansible.builtin.command: update-ca-trust
 #    
 #    - name: Extract system trust store
+#      become: true
 #      ansible.builtin.command: update-ca-trust extract
+#    
+#    - name: Cleanup files
+#      become: true
+#      file:
+#        path: "{{ item }}"
+#        state: absent
+#      loop:
+#        - README.md
+#        - LICENSE
+#        - execution-environment.tar
+#        - image-archive.tar
+#        - pause.tar
+#        - postgres.tar
+#        - quay.tar
+#        - redis.tar
+
+#    - name: Install collections
+#      community.general.ansible_galaxy_install:
+#        type: collection
+#        name:
+#          - "amazon.aws"
+#          - "commnity.aws"
+#          - "community.crypto"
+#    
+#    - name: Install roles
+#      community.general.ansible_galaxy_install:
+#        type: role
+#        name:
+#          - "redhatofficial.rhel8_stig"
     
-    #- name: Cleanup files
-    #  file:
-    #    path: "{{ item }}"
-    #    state: absent
-    #  loop:
-    #    - README.md
-    #    - LICENSE
-    #    - execution-environment.tar
-    #    - image-archive.tar
-    #    - pause.tar
-    #    - postgres.tar
-    #    - quay.tar
-    #    - redis.tar
+    - name: Create directory for git clone
+      file:
+        path: "{{ ansible_env.HOME }}/openshift4-c2s"
+        state: directory
+
+    - name: Read-write git checkout from github
+      ansible.builtin.git:
+        repo: https://github.com/RedHatGov/openshift4-c2s.git
+        dest: "{{ ansible_env.HOME }}/openshift4-c2s"
+    
+#    - name: Install pip modules
+#      ansible.builtin.pip:
+#        name:
+#          - "wheel"
+#          - "jinja2"
+#          - "awscli"
+#        executable: pip3
+#        extra_args: "--user"
+    
+    - name: Create containers directory
+      file:
+        path: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers"
+        state: directory
+    
+    - name: Copy pull secret
+      copy:
+        src: "/tmp/pull-secret.txt"
+        dest: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
+        remote_src: true
+    
+    - name: Get Registry Username
+      shell: |
+        grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+      register: reg_user_info
+    
+    - name: Get Registry Password
+      shell: |
+        grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+      register: reg_pass_info
+    
+    - name: Set registry username and password facts
+      set_fact:
+        reg_user: "{{ reg_user_info.stdout }}"
+        reg_pass: "{{ reg_pass_info.stdout }}"
+    
+    - name: Get hostname
+      ansible.builtin.command: hostname
+      register: hostname_info
+
+    - name: Set hostname fact
+      set_fact:
+        my_hostname: "{{ hostname_info.stdout }}"
+
+    - name: Show hostname var
+      debug:
+        var: my_hostname
+
+#    - name: Login to local registry
+#      containers.podman.podman_login:
+#        username: "{{ reg_user }}"
+#        password: "{{ reg_pass }}"
+#        registry: "{{ my_hostname }}:8443"
+#        tlsverify: false
+    
+    - name: Replace localhost with actual hostname
+      ansible.builtin.replace:
+        path: /tmp/imageset-config.yaml
+        regexp: localhost
+        replace: "{{ my_hostname }}"
+
+    - name: Gather facts again
+      ansible.builtin.setup:
+
+    - name: Show facts
+      debug:
+        var: ansible_env
+    
+#    - name: Mirror content
+#      shell: |
+#        /usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://{{ my_hostname }}:8443

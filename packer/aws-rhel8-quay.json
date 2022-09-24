@@ -116,19 +116,19 @@
     },
     {
       "type": "shell",
-      "execute_command": "sudo -S sh '{{.Path}}'",
+      "execute_command": "sh '{{.Path}}'",
       "inline_shebang": "/bin/sh -e -x",
       "inline": [
         "echo '*** Running bootstrap.sh script...'",
-        "chmod +x /tmp/bootstrap.sh",
-        "dnf -y install ansible",
-        "#/tmp/bootstrap.sh",
-        "#/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
-        "mv /tmp/firstboot.sh /usr/local/bin/firstboot.sh",
-        "chmod +x /usr/local/bin/firstboot.sh",
-        "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
-        "chmod 0644 /etc/systemd/system/quayinit.service",
-        "systemctl enable quayinit.service",
+        "sudo dnf -y install ansible python3 podman firewalld",
+        "ansible-galaxy role install redhatofficial.rhel8_stig",
+        "pip3 install --user wheel jinja2 awscli",
+        "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix",
+        "#mv /tmp/firstboot.sh /usr/local/bin/firstboot.sh",
+        "#chmod +x /usr/local/bin/firstboot.sh",
+        "#mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
+        "#chmod 0644 /etc/systemd/system/quayinit.service",
+        "#systemctl enable quayinit.service",
         "#ls -l /usr/local/bin/",
         "#ls -l /home/ec2-user/"
       ]
@@ -139,14 +139,26 @@
     },
     {
       "type": "shell",
+      "execute_command": "sudo -S sh '{{.Path}}'",
+      "inline_shebang": "/bin/sh -e -x",
+      "inline": [
+        "echo '*** Installing Mirror Registry...'",
+        "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log"
+      ]
+    },
+    {
+      "type": "shell",
       "execute_command": "sh '{{.Path}}'",
       "inline_shebang": "/bin/sh -e -x",
       "inline": [
-        "echo '*** Running setup.sh script...'",
-        "echo -n 'Who am I: '",
-        "id -u",
-        "chmod +x /tmp/setup.sh",
-        "#/tmp/setup.sh"
+        "echo '*** Mirroring Content...'",
+        "mkdir -p ${XDG_RUNTIME_DIR}/containers || true",
+        "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
+        "export REG_USER=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}')",
+        "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
+        "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
+        "#sed -i \"s|localhost|${HOSTNAME}|g\" /tmp/imageset-config.yaml",
+        "#/usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443"
       ]
     },
     {
@@ -158,6 +170,7 @@
         "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
         "shred -u /root/.*history /home/*/.*history",
         "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
+        "#shred -u /var/run/user/1000/containers/auth.json",
         "rm -f /etc/machine-id",
         "sync; sleep 1; sync"
       ]
