@@ -32,14 +32,3 @@ ansible-galaxy role install redhatofficial.rhel8_stig
 packer build ${PACKER_TEMPLATE}
 
 exit 0
-
-# Below code does not work correctly
-
-echo "Waiting 1 minute before cleaning up extra resources..."
-sleep 60
-VOL_ID=`aws --region ${AWS_DEFAULT_REGION} ec2 describe-volumes --filters='Name=status,Values=available Name=tag-key,Values="Builder" Name=tag-value,Values="Packer*"' --query 'Volumes[*].{VolumeId:VolumeId}' --output text`
-echo "Deleting unattached volume id ${VOL_ID}..."
-for V_ID in $VOL_ID
-do
-  aws --region ${AWS_DEFAULT_REGION} ec2 delete-volume --volume-id ${V_ID}
-done
