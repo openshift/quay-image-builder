@@ -29,6 +29,6 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners 309956199498 --region us-ea
 
 ansible-galaxy role install redhatofficial.rhel8_stig
 
-packer build ${PACKER_TEMPLATE}
+packer build ${PACKER_TEMPLATE} | tee packer.log
 
 exit 0
