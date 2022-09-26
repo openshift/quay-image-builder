@@ -129,3 +129,11 @@
         pause: 5
       when:
         - not (launched_by_systemd | bool)
+
+      # Stop systemd from running this playbook
+      # There is no check at the top for this so users can run
+      # the playbook manually
+    - name: Touch firstboot file
+      ansible.builtin.file:
+        path: /etc/sysconfig/rh-quay-firstboot
+        state: touch
