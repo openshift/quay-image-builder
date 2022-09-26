@@ -1,10 +1,15 @@
 [Unit]
-Description=Configure Quay on Firstboot
-ConditionFirstBoot=yes
+Description=Configure Quay on FirstBoot
+Wants=network.target
+After=network-online.target
+Before=quay-pod.service
+Before=systemd-user-sessions.service
+ConditionPathExists=!/etc/sysconfig/rh-quay-firstboot
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/firstboot.sh
+ExecStart=ansible-playbook --extra-vars 'launched_by_systemd=true' /tmp/playbooks/replace-quay-certificates.yaml
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target default.target
+

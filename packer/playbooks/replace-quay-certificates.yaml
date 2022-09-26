@@ -6,10 +6,12 @@
   vars:
     quay_root: "/opt/quay"
     quay_hostname: "quay:8443"
+    launched_by_systemd: false
 
   tasks:
 
-    - name: Stop Quay service
+      # Only when running outside of systemd
+    - name: Stop Quay services
       systemd:
         name: "{{ item }}"
         state: stopped
@@ -18,6 +20,10 @@
         - "quay-redis.service"
         - "quay-postgres.service"
         - "quay-app.service"
+      loop_control:
+        pause: 5
+      when:
+        - not (launched_by_systemd | bool)
 
     - name: Change SERVER_HOSTNAME in quay config to current hostname
       ansible.builtin.lineinfile:
@@ -109,12 +115,8 @@
     - name: update registry trusted ca extract
       command: update-ca-trust extract
 
-    - name: Start Quay service
-      systemd:
-        name: quay-pod.service
-        state: started
-
-    - name: Start Quay service
+      # Only when running outside of systemd
+    - name: Start Quay services
       systemd:
         name: "{{ item }}"
         state: started
@@ -123,3 +125,7 @@
         - "quay-postgres.service"
         - "quay-redis.service"
         - "quay-app.service"
+      loop_control:
+        pause: 5
+      when:
+        - not (launched_by_systemd | bool)
