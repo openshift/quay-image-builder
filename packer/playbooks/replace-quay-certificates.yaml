@@ -25,11 +25,19 @@
       when:
         - not (launched_by_systemd | bool)
 
+    - name: Get hostname
+      command: hostname
+      register: hostname_info
+
+    - name: Set hostname fact
+      set_fact:
+        my_hostname: "{{ hostname_info.stdout }}"
+
     - name: Change SERVER_HOSTNAME in quay config to current hostname
       ansible.builtin.lineinfile:
         path: "{{ quay_root }}/quay-config/config.yaml"
         regexp: '^SERVER_HOSTNAME:.*'
-        line: "SERVER_HOSTNAME: {{ ansible_env.HOSTNAME }}:8443"
+        line: "SERVER_HOSTNAME: {{ my_hostname }}:8443"
 
     - name: Remove existing certs
       file:
