@@ -24,7 +24,7 @@ cat << EOF > ${IMAGE_COMPONENT_CONFIG}
 EOF
  
 ## Create the custom component
-aws imagebuilder create-component --cli-input-json file://${IMAGE_COMPONENT_CONFIG} | jq -r '.componentBuildVersionArn'
+aws imagebuilder create-component --cli-input-json file://${IMAGE_COMPONENT_CONFIG}
 
 ## List all available components owned by You
 # It takes time for the list to update so keep checking
