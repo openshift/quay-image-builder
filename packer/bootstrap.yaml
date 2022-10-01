@@ -18,22 +18,45 @@
 #      shell: dnf clean all
     
     # TODO: Commented out for testing
-#    - name: Update all packages
-#      become: true
-#      ansible.builtin.dnf:
-#        name: "*"
-#        state: latest
+    - name: Update all packages
+      become: true
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
     
+    - name: Update pip
+      become: true
+      ansible.builtin.pip:
+        name: pip
+        state: latest
+        executable: pip3
+
+#      TODO: This does not seem to work with packer well
+#    - name: Install collections
+#      community.general.ansible_galaxy_install:
+#        type: collection
+#        name: "{{ item }}"
+#      loop:
+#          - "amazon.aws"
+#          - "commnity.aws"
+#          - "community.crypto"
+#          - "containers.podman"
+#          - "ansible.posix"
+
+#    - name: Install roles
+#      community.general.ansible_galaxy_install:
+#        type: role
+#        name:
+#          - "redhatofficial.rhel8_stig"
+
     - name: Install required packages
       become: true
       ansible.builtin.dnf:
         name:
-          - ansible
           - podman
           - firewalld
           - git
           - vim
-          - python3
           - jq
     
     - name: Enable firewalld service
@@ -52,16 +75,6 @@
         state: enabled
         zone: "public"
     
-    - name: Update pip
-      become: true
-      ansible.builtin.pip:
-        name: pip
-        state: latest
-        executable: pip3
-    
-    # TODO: Add hardening 
-    #ansible-playbook /tmp/harden_quay.yaml
-    
     - name: Pull OCP Dependencies
       become: true
       ansible.builtin.unarchive:
@@ -75,6 +88,7 @@
         - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
+      # Separate task because this doesn't come as an archive
     - name: Download odo
       become: true
       ansible.builtin.get_url:
@@ -160,20 +174,6 @@
 #        - quay.tar
 #        - redis.tar
 
-#    - name: Install collections
-#      community.general.ansible_galaxy_install:
-#        type: collection
-#        name:
-#          - "amazon.aws"
-#          - "commnity.aws"
-#          - "community.crypto"
-#    
-#    - name: Install roles
-#      community.general.ansible_galaxy_install:
-#        type: role
-#        name:
-#          - "redhatofficial.rhel8_stig"
-    
     - name: Create directory for git clone
       file:
         path: "{{ ansible_env.HOME }}/openshift4-c2s"
@@ -184,14 +184,14 @@
         repo: https://github.com/RedHatGov/openshift4-c2s.git
         dest: "{{ ansible_env.HOME }}/openshift4-c2s"
     
-#    - name: Install pip modules
-#      ansible.builtin.pip:
-#        name:
-#          - "wheel"
-#          - "jinja2"
-#          - "awscli"
-#        executable: pip3
-#        extra_args: "--user"
+    - name: Install pip modules
+      ansible.builtin.pip:
+        name:
+          - "wheel"
+          - "jinja2"
+          - "awscli"
+        executable: pip3
+        extra_args: "--user"
     
     - name: Create containers directory
       file:
@@ -219,6 +219,7 @@
         reg_user: "{{ reg_user_info.stdout }}"
         reg_pass: "{{ reg_pass_info.stdout }}"
     
+      # The ansible_env.HOSTNAME doesn't get set for some reason
     - name: Get hostname
       ansible.builtin.command: hostname
       register: hostname_info
@@ -231,26 +232,8 @@
       debug:
         var: my_hostname
 
-#    - name: Login to local registry
-#      containers.podman.podman_login:
-#        username: "{{ reg_user }}"
-#        password: "{{ reg_pass }}"
-#        registry: "{{ my_hostname }}:8443"
-#        tlsverify: false
-    
     - name: Replace localhost with actual hostname
       ansible.builtin.replace:
         path: /tmp/imageset-config.yaml
         regexp: localhost
         replace: "{{ my_hostname }}"
-
-    - name: Gather facts again
-      ansible.builtin.setup:
-
-    - name: Show facts
-      debug:
-        var: ansible_env
-    
-#    - name: Mirror content
-#      shell: |
-#        /usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://{{ my_hostname }}:8443

@@ -13,3 +13,9 @@
         unknown_severity: false
         enable_fips_mode: true
         sudo_remove_nopasswd: false
+        sysctl_user_max_user_namespaces: false
+        service_fapolicyd_enabled: false
+        mount_option_nodev_nonroot_local_partitions: false
+        mount_option_dev_shm_nodev: false
+        mount_option_dev_shm_noexec: false
+        mount_option_dev_shm_nosuid: false
