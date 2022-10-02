@@ -120,7 +120,7 @@
       "inline_shebang": "/bin/sh -e -x",
       "inline": [
         "echo '*** Running bootstrap.sh script...'",
-        "sudo dnf -y install ansible python3",
+        "sudo dnf -y install ansible-core python38",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
         "pip3 install --user wheel jinja2 awscli",
         "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
