@@ -75,6 +75,15 @@
       "Purpose": "{{user `purpose`}}",
       "Builder": "Packer {{packer_version}}"
     },
+    "snapshot_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
     "ssh_username": "ec2-user",
     "ssh_pty": "true"
   }],
@@ -107,7 +116,7 @@
         "echo '*** Running bootstrap.sh script...'",
         "sudo dnf -y install ansible-core python38",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
-        "pip3 install --user wheel jinja2 awscli",
+        "pip3 install --user wheel jinja2 awscli boto3",
         "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
       ]
     },
@@ -128,6 +137,7 @@
         "systemctl enable quayinit.service",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
         "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
+        "ansible-galaxy collection install community.general ansible.posix",
         "ansible-playbook /tmp/playbooks/harden_quay.yaml",
         "chmod 0644 /var/log/mirror-registry.log"
       ]
