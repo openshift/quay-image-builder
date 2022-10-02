@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 # Cleanup AMIs and Snapshots of builds
 
