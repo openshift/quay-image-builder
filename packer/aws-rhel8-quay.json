@@ -81,16 +81,6 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "bootstrap.sh",
-      "destination": "/tmp/bootstrap.sh"
-    },
-    {
-      "type": "file",
-      "source": "setup.sh",
-      "destination": "/tmp/setup.sh"
-    },
-    {
-      "type": "file",
       "source": "/home/danclark/pull-secret.txt",
       "destination": "/tmp/pull-secret.txt"
     },
@@ -108,11 +98,6 @@
       "type": "file",
       "source": "quayinit.service",
       "destination": "/tmp/quayinit.service"
-    },
-    {
-      "type": "file",
-      "source": "firstboot.sh",
-      "destination": "/tmp/firstboot.sh"
     },
     {
       "type": "shell",
