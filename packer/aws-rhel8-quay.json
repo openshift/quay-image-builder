@@ -28,7 +28,6 @@
     "subnet_id": "{{ user `subnet_id` }}",
     "associate_public_ip_address": true,
     "ami_virtualization_type": "hvm",
-    "security_group_id": "sg-0af90ca334eb6b449",
     "ami_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
