@@ -7,6 +7,12 @@ export PULL_SECRET="/home/danclark/pull-secret.txt"
 # Use zone c for builds. Change to a different zone for your region if needed
 AWS_ZONE="c"
 
+# Red Hat Account ID in AWS for AMI search
+REDHAT_ID="309956199498"
+
+# Current RHEL version to build with
+RHEL_VER="8.6"
+
 if [ -z $AWS_ACCESS_KEY_ID ];
 then
   echo "AWS_ACCESS_KEY_ID Required"
@@ -35,9 +41,9 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFA
   --query "Subnets[?AvailabilityZone == '${AWS_DEFAULT_REGION}${AWS_ZONE}'].SubnetId" \
   --output text)
 
-export SOURCE_AMI=$(aws ec2 describe-images --owners 309956199498 --region us-east-1 \
+export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
   --output text --query 'Images[*].[ImageId]' \
-  --filters "Name=name,Values=RHEL-8.6?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
 
 # Not an ansible-local provisioner anymore.
 #ansible-galaxy role install redhatofficial.rhel8_stig
