@@ -11,7 +11,9 @@
     "release": "8.6",
     "vpc_id": "{{env `DEAFULT_VPC_ID`}}",
     "subnet_id": "{{env `SUBNET_ID`}}",
-    "source_ami": "{{env `SOURCE_AMI`}} "
+    "source_ami": "{{env `SOURCE_AMI`}}",
+    "pull_secret": "{{env `PULL_SECRET`}}",
+    "ocp_ver": "{{env `OCP_VER`}}"
   },
   "builders": [{
     "access_key": "{{user `aws_access_key`}}",
@@ -19,13 +21,14 @@
     "ami_name": "Quay Regisry for OCP4 {{isotime \"2006-01-02-150405\"}}",
     "ami_description": "Quay Registry for OCP4 {{isotime \"2006-01-02-150405\"}}",
     "instance_type": "m5.xlarge",
-    "source_ami": "ami-06640050dc3f556bb",
+    "source_ami": "{{user `source_ami`}}",
     "type": "amazon-ebs",
     "region": "{{user `region`}}",
     "vpc_id": "{{ user `vpc_id` }}",
     "subnet_id": "{{ user `subnet_id` }}",
     "associate_public_ip_address": true,
     "ami_virtualization_type": "hvm",
+    "security_group_id": "sg-0af90ca334eb6b449",
     "ami_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
@@ -90,7 +93,7 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "/home/danclark/pull-secret.txt",
+      "source": "{{user `pull_secret`}}",
       "destination": "/tmp/pull-secret.txt"
     },
     {
@@ -108,13 +111,20 @@
       "source": "quayinit.service",
       "destination": "/tmp/quayinit.service"
     },
+    {   
+      "type": "shell",
+      "execute_command": "sudo -n sh '{{.Path}}'",
+      "inline": [
+        "echo '*** Installing Base Dependencies...'",
+        "set -ex",
+        "dnf -y install ansible-core python38"
+      ]
+    },
     {
       "type": "shell",
-      "execute_command": "sh '{{.Path}}'",
-      "inline_shebang": "/bin/sh -e -x",
       "inline": [
-        "echo '*** Running bootstrap.sh script...'",
-        "sudo dnf -y install ansible-core python38",
+        "echo '*** Installing User Space Dependencies...'",
+        "set -ex",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
         "pip3 install --user wheel jinja2 awscli boto3",
         "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
@@ -122,14 +132,18 @@
     },
     {
       "type": "ansible-local",
-      "playbook_file": "./bootstrap.yaml"
+      "playbook_file": "./bootstrap.yaml",
+      "extra_arguments": [
+        "--extra-vars",
+        "\"ocp_ver={{ user `ocp_ver`}}\""
+      ]
     },
     {
       "type": "shell",
-      "execute_command": "sudo -S sh '{{.Path}}'",
-      "inline_shebang": "/bin/sh -e -x",
+      "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [
         "echo '*** Installing Mirror Registry...'",
+        "set -ex",
         "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
         "chmod 0644 /etc/systemd/system/quayinit.service",
         "restorecon -v /etc/systemd/system/quayinit.service",
@@ -144,10 +158,10 @@
     },
     {
       "type": "shell",
-      "execute_command": "sh '{{.Path}}'",
-      "inline_shebang": "/bin/sh -e -x",
+      "execute_command": "/bin/sh -c {{ .Path }} {{ .Vars }}",
       "inline": [
         "echo '*** Mirroring Content...'",
+        "set -ex",
         "mkdir -p ${XDG_RUNTIME_DIR}/containers || true",
         "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
         "export REG_USER=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}')",
@@ -158,10 +172,10 @@
     },
     {
       "type": "shell",
-      "execute_command": "sudo -S sh '{{.Path}}'",
-      "inline_shebang": "/bin/sh -e -x",
+      "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [
         "echo '** Shreding sensitive data ...'",
+        "set -ex",
         "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
         "shred -u /root/.*history /home/*/.*history",
         "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",

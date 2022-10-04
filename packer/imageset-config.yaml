@@ -7,7 +7,7 @@ storageConfig:
 mirror:
   platform:
     channels:
-      - name: stable-4.11 # References latest stable release
+      - name: stable-OCP_VERSION # References latest stable release
     graph: true # Include Cincinnati upgrade graph image in imageset
 #  operators:
 #    - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.11

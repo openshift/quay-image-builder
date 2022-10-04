@@ -11,7 +11,9 @@ AWS_ZONE="c"
 REDHAT_ID="309956199498"
 
 # Current RHEL version to build with
-RHEL_VER="8.6"
+export RHEL_VER="8.6"
+
+export OCP_VER="4.11"
 
 if [ -z $AWS_ACCESS_KEY_ID ];
 then
@@ -44,9 +46,6 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFA
 export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
   --output text --query 'Images[*].[ImageId]' \
   --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
-
-# Not an ansible-local provisioner anymore.
-#ansible-galaxy role install redhatofficial.rhel8_stig
 
 packer build ${PACKER_TEMPLATE} | tee packer.log
 
