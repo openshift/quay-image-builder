@@ -45,3 +45,21 @@ mirror:
         - name: redhat-oadp-operator
         - name: rh-service-binding-operator
         - name: serverless-operator
+    - catalog: registry.redhat.io/redhat/certified-operator-index:vOCP_VERSION
+      packages:
+        - name: cilium
+        - name: cilium-enterprise
+        - name: crunchy-postgres-operator
+        - name: elasticsearch-eck-operator-certified
+        - name: f5-bigip-ctlr-operator
+        - name: gitlab-runner-operator
+        - name: gpu-operator-certified
+        - name: grafana-cloud-log-forwarder-operator
+        - name: intel-device-plugins-operator
+        - name: memcached-operator-ogaye
+        - name: memory-machine-operator
+        - name: minio-operator
+        - name: nginx-ingress-operator
+        - name: nxrm-operator-certified
+        - name: redis-enterprise-operator-cert
+        - name: splunk-operator
