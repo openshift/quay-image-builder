@@ -174,7 +174,6 @@
       "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [
         "echo '** Shreding sensitive data ...'",
-        "set -ex",
         "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
         "shred -u /root/.*history /home/*/.*history",
         "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
