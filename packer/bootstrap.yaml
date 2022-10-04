@@ -223,5 +223,5 @@
     - name: Replace stable-OCP_VERSION with actual version number
       ansible.builtin.replace:
         path: /tmp/imageset-config.yaml
-        regexp: stable-OCP_VERSION
-        replace: "stable-{{ ocp_ver }}"
+        regexp: OCP_VERSION
+        replace: "{{ ocp_ver }}"
