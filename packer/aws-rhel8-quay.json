@@ -166,7 +166,7 @@
         "export REG_USER=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}')",
         "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
         "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
-        "/usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443"
+        "/usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
       ]
     },
     {
