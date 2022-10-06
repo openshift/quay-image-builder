@@ -2,10 +2,10 @@
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
 
-export PULL_SECRET="/home/danclark/pull-secret.txt"
+export PULL_SECRET="${PULL_SECRET:-/home/danclark/pull-secret.txt}"
 
 # Use zone c for builds. Change to a different zone for your region if needed
-AWS_ZONE="c"
+export AWS_ZONE="${AWS_ZONE:-c}"
 
 # Red Hat Account ID in AWS for AMI search
 REDHAT_ID="309956199498"
@@ -13,7 +13,7 @@ REDHAT_ID="309956199498"
 # Current RHEL version to build with
 export RHEL_VER="8.6"
 
-export OCP_VER="4.11"
+export OCP_VER="${OCP_VER:-4.11}"
 
 if [ -z $AWS_ACCESS_KEY_ID ];
 then
