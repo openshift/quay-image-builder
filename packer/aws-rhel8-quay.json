@@ -18,7 +18,7 @@
   "builders": [{
     "access_key": "{{user `aws_access_key`}}",
     "secret_key": "{{user `aws_secret_key`}}",
-    "ami_name": "Quay Regisry for OCP4 {{isotime \"2006-01-02-150405\"}}",
+    "ami_name": "Quay Registry for OCP4 {{isotime \"2006-01-02-150405\"}}",
     "ami_description": "Quay Registry for OCP4 {{isotime \"2006-01-02-150405\"}}",
     "instance_type": "m5.xlarge",
     "source_ami": "{{user `source_ami`}}",
