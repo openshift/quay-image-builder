@@ -1,4 +1,4 @@
-apiVersion: mirror.openshift.io/API_VERSION
+apiVersion: mirror.openshift.io/v1alpha2
 kind: ImageSetConfiguration
 storageConfig:
   registry:
@@ -29,7 +29,6 @@ mirror:
         - name: multicluster-engine
         - name: node-healthcheck-operator
         - name: node-maintenance-operator
-        - name: node-observability-operator
         - name: numaresources-operator
         - name: odf-multicluster-orchestrator
         - name: odr-cluster-operator

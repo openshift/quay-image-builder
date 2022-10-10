@@ -10,9 +10,6 @@
     quay_root: /opt/quay
     reg_user: "init"
     reg_pass: "openshift"
-    api_version:
-      '4.11': 'v1alpha2'
-      '4.10': 'v1alpha1'
 
   tasks:
 
@@ -228,9 +225,3 @@
         path: /tmp/imageset-config.yaml
         regexp: OCP_VERSION
         replace: "{{ ocp_ver }}"
-
-    - name: Set correct API version for oc-mirror
-      ansible.builtin.replace:
-        path: /tmp/imageset-config.yaml
-        regexp: API_VERSION
-        replace: "{{ api_version[ocp_ver] }}"
