@@ -48,6 +48,9 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFA
 #  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
 export SOURCE_AMI="ami-063851ca4aec10974"
 
+export AWS_MAX_ATTEMPTS="120"
+export AWS_POLL_DELAY_SECONDS="60"
+
 packer build ${PACKER_TEMPLATE} | tee packer.log
 
 exit 0
