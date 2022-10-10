@@ -43,9 +43,10 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFA
   --query "Subnets[?AvailabilityZone == '${AWS_DEFAULT_REGION}${AWS_ZONE}'].SubnetId" \
   --output text)
 
-export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
-  --output text --query 'Images[*].[ImageId]' \
-  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+#export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
+#  --output text --query 'Images[*].[ImageId]' \
+#  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+export SOURCE_AMI="ami-063851ca4aec10974"
 
 packer build ${PACKER_TEMPLATE} | tee packer.log
 
