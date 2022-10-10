@@ -31,7 +31,7 @@
     "ami_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 300,
+        "volume_size": 200,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": false
@@ -40,7 +40,7 @@
     "launch_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 300,
+        "volume_size": 200,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": true
@@ -110,6 +110,11 @@
       "source": "quayinit.service",
       "destination": "/tmp/quayinit.service"
     },
+    {
+      "type": "file",
+      "source": "update_mirror_metadata.sh",
+      "destination": "/tmp/update_mirror_metadata.sh"
+    },
     {   
       "type": "shell",
       "execute_command": "sudo -n sh '{{.Path}}'",
@@ -152,7 +157,8 @@
         "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
         "ansible-galaxy collection install community.general ansible.posix",
         "ansible-playbook /tmp/playbooks/harden_quay.yaml",
-        "chmod 0644 /var/log/mirror-registry.log"
+        "chmod 0644 /var/log/mirror-registry.log",
+        "chmod -R 0755 /tmp/playbooks"
       ]
     },
     {
@@ -165,8 +171,17 @@
         "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
         "export REG_USER=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}')",
         "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
+        "podman login --authfile=${HOME}/pull-secret.txt -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
         "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
         "/usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "/bin/sh -c {{ .Path }} {{ .Vars }}",
+      "inline": [
+        "echo '*** Updating Mirroring Content Metadata...'",
+        "bash /tmp/update_mirror_metadata.sh"
       ]
     },
     {
@@ -174,6 +189,8 @@
       "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [
         "echo '** Shreding sensitive data ...'",
+        "dnf clean all",
+        "rm -rf /var/cache/yum /var/cache/dnf",
         "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
         "shred -u /root/.*history /home/*/.*history",
         "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
