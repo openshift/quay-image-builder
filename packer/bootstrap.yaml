@@ -70,7 +70,7 @@
         - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-install-linux.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-client-linux.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/oc-mirror.tar.gz"
+        - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
       # Separate task because this doesn't come as an archive
