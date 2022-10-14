@@ -24,12 +24,12 @@
         name: "*"
         state: latest
     
-    - name: Update pip
-      become: true
-      ansible.builtin.pip:
-        name: pip
-        state: latest
-        executable: pip3
+#    - name: Update pip
+#      become: true
+#      ansible.builtin.pip:
+#        name: pip
+#        state: latest
+#        executable: pip3
 
     - name: Install required packages
       become: true
@@ -166,14 +166,15 @@
         repo: https://github.com/RedHatGov/openshift4-c2s.git
         dest: "{{ ansible_env.HOME }}/openshift4-c2s"
     
-    - name: Install pip modules
-      ansible.builtin.pip:
-        name:
-          - "wheel"
-          - "jinja2"
-          - "awscli"
-        executable: pip3
-        extra_args: "--user"
+#    - name: Install pip modules
+#      ansible.builtin.pip:
+#        name:
+#          - "wheel"
+#          - "jinja2"
+#          - "awscli"
+#          - "boto3"
+#        executable: pip3
+#        extra_args: "--user"
     
     - name: Create containers directory
       file:
@@ -216,12 +217,12 @@
 
     - name: Replace localhost with actual hostname
       ansible.builtin.replace:
-        path: /tmp/imageset-config.yaml
+        path: /home/ec2-user/imageset-config.yaml
         regexp: localhost
         replace: "{{ my_hostname }}"
 
     - name: Replace stable-OCP_VERSION with actual version number
       ansible.builtin.replace:
-        path: /tmp/imageset-config.yaml
+        path: /home/ec2-user/imageset-config.yaml
         regexp: OCP_VERSION
         replace: "{{ ocp_ver }}"

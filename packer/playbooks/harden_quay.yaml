@@ -19,3 +19,8 @@
         mount_option_dev_shm_nodev: false
         mount_option_dev_shm_noexec: false
         mount_option_dev_shm_nosuid: false
+        accounts_minimum_age_login_defs: false
+        accounts_maximum_age_login_defs: false
+        accounts_password_minlen_login_defs: false
+        require_emergency_target_auth: false
+        require_singleuser_auth: false

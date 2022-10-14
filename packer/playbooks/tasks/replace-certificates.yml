@@ -1,6 +1,7 @@
 ---
   # Only when running outside of systemd
 - name: Stop Quay services
+  become: true
   systemd:
     name: "{{ item }}"
     state: stopped
@@ -14,21 +15,28 @@
   when:
     - not (launched_by_systemd | bool)
 
+# The ansible_env.HOSTNAME doesn't get set for some reason
 - name: Get hostname
-  command: hostname
+  ansible.builtin.command: hostname
   register: hostname_info
+  when:
+    - quay_hostname is not defined
 
-- name: Set hostname fact
+- name: Set quay hostname to system hostname
   set_fact:
-    my_hostname: "{{ hostname_info.stdout }}"
+    quay_hostname: "{{ hostname_info.stdout }}"
+  when:
+    - quay_hostname is not defined
 
 - name: Change SERVER_HOSTNAME in quay config to current hostname
+  become: true
   ansible.builtin.lineinfile:
     path: "{{ quay_root }}/quay-config/config.yaml"
     regexp: '^SERVER_HOSTNAME:.*'
-    line: "SERVER_HOSTNAME: {{ my_hostname }}:{{ quay_port }}"
+    line: "SERVER_HOSTNAME: {{ quay_hostname }}:{{ quay_port }}"
 
 - name: Remove existing certs
+  become: true
   file:
     path: "{{ item }}"
     state: absent
@@ -44,40 +52,50 @@
 - name: Create SSL Certs
   block:
     - name: Create necessary directory for Quay rootCA files
+      become: true
       ansible.builtin.file:
         path: "{{ quay_root }}/quay-rootCA"
         state: directory
         recurse: yes
         
     - name: Create OpenSSL Config
+      become: true
       template:
         src: templates/req.j2
         dest: "{{ quay_root }}/quay-config/openssl.cnf"
 
     - name: Create root CA key
+      become: true
       command: "openssl genrsa -out {{ quay_root }}/quay-rootCA/rootCA.key 2048"
 
     - name: Create root CA pem
+      become: true
       command: "openssl req -x509 -new -config {{ quay_root }}/quay-config/openssl.cnf -nodes -key {{ quay_root }}/quay-rootCA/rootCA.key -sha256 -days 1024 -out {{ quay_root }}/quay-rootCA/rootCA.pem -addext basicConstraints=critical,CA:TRUE,pathlen:1"
 
     - name: Create ssl key
+      become: true
       command: "openssl genrsa -out {{ quay_root }}/quay-config/ssl.key 2048"
 
     - name: Create CSR
+      become: true
       command: "openssl req -new -key {{ quay_root }}/quay-config/ssl.key -out {{ quay_root }}/quay-config/ssl.csr -subj \"/CN=quay-enterprise\" -config {{ quay_root }}/quay-config/openssl.cnf"
 
     - name: Create self-signed cert
+      become: true
       command: "openssl x509 -req -in {{ quay_root }}/quay-config/ssl.csr -CA {{ quay_root }}/quay-rootCA/rootCA.pem -CAkey {{ quay_root }}/quay-rootCA/rootCA.key -CAcreateserial -out {{ quay_root }}/quay-config/ssl.cert -days 356 -extensions v3_req -extfile {{ quay_root }}/quay-config/openssl.cnf"
 
     - name: Create chain cert
+      become: true
       ansible.builtin.shell: cat {{ quay_root }}/quay-config/ssl.cert {{ quay_root }}/quay-rootCA/rootCA.pem > {{ quay_root }}/quay-config/chain.cert
 
     - name: Replace ssl cert with chain cert
+      become: true
       command: mv --force {{ quay_root }}/quay-config/chain.cert {{ quay_root }}/quay-config/ssl.cert
 
 - name: Set certificate permissions
   block:
     - name: Set permissions for key
+      become: true
       ansible.builtin.file:
         path: "{{ quay_root }}/quay-config/ssl.key"
         mode: u=rw,g=r,o=r
@@ -85,6 +103,7 @@
         group: root
 
     - name: Set permissions for cert
+      become: true
       ansible.builtin.file:
         path: "{{ quay_root }}/quay-config/ssl.cert"
         mode: u=rw,g=r,o=r
@@ -92,6 +111,7 @@
         group: root
 
 - name: Remove existing certificate copies
+  become: true
   file:
     path: '{{ item }}'
     state: absent
@@ -107,13 +127,16 @@
     remote_src: true
 
 - name: update registry trusted ca
+  become: true
   command: update-ca-trust
 
 - name: update registry trusted ca extract
+  become: true
   command: update-ca-trust extract
 
   # Only when running outside of systemd
 - name: Start Quay services
+  become: true
   systemd:
     name: "{{ item }}"
     state: started
@@ -127,10 +150,50 @@
   when:
     - not (launched_by_systemd | bool)
 
+  - name: Wait for services to restart
+    pause:
+      minutes: 2
+
+  - name: Get Registry Username
+    shell: |
+      grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+    register: reg_user_info
+    when:
+      - (reg_user is not defined) and (reg_pass is not defined)
+
+  - name: Get Registry Password
+    shell: |
+      grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+    register: reg_pass_info
+    when:
+      - (reg_user is not defined) and (reg_pass is not defined)
+
+  - name: Set registry username and password facts
+    set_fact:
+      reg_user: "{{ reg_user_info.stdout }}"
+      reg_pass: "{{ reg_pass_info.stdout }}"
+    when:
+      - (reg_user is not defined) and (reg_pass is not defined)
+
+  - name: Remove existing pull secret file
+    file:
+      path: "/home/ec2-user/pull-secret.txt"
+      state: absent
+
+  - name: Login to the registry and drop a pull secret in ec2-user home
+    containers.podman.podman_login:
+      registry: "{{ quay_host }}:{{ quay_port }}"
+      username: "{{ reg_user }}"
+      password: "{{ reg_pass }}"
+      authfile: "/home/ec2-user/pull-secret.txt"
+
   # Stop systemd from running this playbook
   # There is no check at the top for this so users can run
   # the playbook manually
 - name: Touch firstboot file
+  become: true
   ansible.builtin.file:
     path: /etc/sysconfig/rh-quay-firstboot
     state: touch
+  when:
+    - (launched_by_systemd | bool)

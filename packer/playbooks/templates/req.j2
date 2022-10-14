@@ -17,4 +17,3 @@ extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 [alt_names]
 DNS.1 = {{ quay_hostname.split(":")[0] if (":" in quay_hostname) else quay_hostname }}
-DNS.2 = {{ my_hostname }}

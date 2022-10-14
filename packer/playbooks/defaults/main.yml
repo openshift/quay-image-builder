@@ -1,0 +1,48 @@
+---
+
+# Director that quay will store data and config files
+quay_root: "/opt/quay"
+
+# Quay system hostname
+#quay_hostname: "quay"
+
+# Quay server port
+quay_port: 8443
+
+# The systemd quayinit service runs ansible playbooks with this option set to true
+# Default is false so the playbooks can be run manually
+launched_by_systemd: false
+
+
+ocp_ver: "4.11" # Overridden in the packer build
+
+# If these are not set then assume the username/password is in the
+# /var/log/mirror-registry.log file
+#reg_user: "init"
+#reg_pass: "openshift"
+
+
+
+
+
+dev_uri: "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"
+mirror_uri: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
+
+metadata_dir: "/home/ec2-user/oc-mirror-workspace/results/"
+
+# Vars used to apply the STIG to the quay mirror system image
+high_severity: true
+medium_severity: true
+low_severity: false
+unknown_severity: false
+enable_fips_mode: true
+sudo_remove_nopasswd: false
+sysctl_user_max_user_namespaces: false
+service_fapolicyd_enabled: false
+mount_option_nodev_nonroot_local_partitions: false
+mount_option_dev_shm_nodev: false
+mount_option_dev_shm_noexec: false
+mount_option_dev_shm_nosuid: false
+accounts_minimum_age_login_defs: false
+accounts_maximum_age_login_defs: false
+accounts_password_minlen_login_defs: false

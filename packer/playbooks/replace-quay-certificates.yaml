@@ -3,14 +3,14 @@
   connection: local
   become: false
   gather_facts: true
-  vars:
-    quay_root: "/opt/quay"
-    quay_hostname: "quay"
-    quay_port: 8443
-    launched_by_systemd: false
 
   tasks:
 
+    - name: Include vars
+      ansible.builtin.include_vars: defaults/main.yml
+
     - name: Include tasks to replace quay certificates
-      include_tasks:
-        name: replace-certificates.yml
+      include_tasks: tasks/replace-certificates.yml
+
+    - name: Include tasks to update oc mirror metadata files
+      include_tasks: tasks/update-metadata-files.yml

@@ -43,10 +43,14 @@ export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFA
   --query "Subnets[?AvailabilityZone == '${AWS_DEFAULT_REGION}${AWS_ZONE}'].SubnetId" \
   --output text)
 
-#export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
-#  --output text --query 'Images[*].[ImageId]' \
-#  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
-export SOURCE_AMI="ami-063851ca4aec10974"
+export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
+  --output text --query 'Images[*].[ImageId]' \
+  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+
+# Hardened AMI in personal account
+#export SOURCE_AMI="ami-063851ca4aec10974"
+# Hardened AMI in Stratosphere account
+#export SOURCE_AMI="ami-04a4e4f63134e75fd"
 
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"

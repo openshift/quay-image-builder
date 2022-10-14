@@ -1,17 +1,44 @@
 ---
-- name: Replace hostname in oc mirror results
-  ansible.builtin.replace:
-    path: "{{ item }}"
-    regexp: localhost
-    replace: "{{ my_hostname }}"
+
+# The ansible_env.HOSTNAME doesn't get set for some reason
+- name: Get hostname
+  ansible.builtin.command: hostname
+  register: hostname_info
+  when:
+    - quay_hostname is not defined
+
+- name: Set quay hostname to system hostname
+  set_fact:
+    quay_hostname: "{{ hostname_info.stdout }}"
+  when:
+    - quay_hostname is not defined
+
+- name: Remove existing metadata files
+  file:
+    path: "{{ metadata_dir }}/{{ item }}"
+    state: absent
   loop:
+    - "updateService.yaml"
     - "imageContentSourcePolicy.yaml"
     - "mapping.txt"
-    - "updateService.yaml"
+    - "catalogSource-redhat-operator-index.yaml"
 
-- name: Replace pull secret with current host
-  ansible.builtin.replace:
-    path: /home/ec2-user/pull-secret.txt.test
-    regexp: "ip-.*-.*-.*-.*.ec2.internal:8443"
-    replace: "{{ ansible_env.HOSTNAME }}:{{quay_port}}"
+- name: Update oc-mirror metadata
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ metadata_dir }}/{{ item }}"
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'
+  loop:
+    - "updateService.yaml"
+    - "imageContentSourcePolicy.yaml"
+    - "mapping.txt"
+    - "catalogSource-redhat-operator-index.yaml"
+
+#- name: Replace pull secret with current host
+#  ansible.builtin.replace:
+#    path: /home/ec2-user/pull-secret.txt.test
+#    regexp: "ip-.*-.*-.*-.*.ec2.internal:8443"
+#    replace: "{{ ansible_env.HOSTNAME }}:{{quay_port}}"
 

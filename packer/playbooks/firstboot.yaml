@@ -2,25 +2,13 @@
 - hosts: default
   become: false
   gather_facts: true
-  vars:
-    #quay_hostname: "quay"
-    quay_port: "8443"
 
   tasks:
 
-    - name: Replace hostname in oc mirror results
-      ansible.builtin.replace:
-        path: "{{ item }}"
-        regexp: localhost
-        replace: "{{ my_hostname }}"
-      loop:
-        - "imageContentSourcePolicy.yaml"
-        - "mapping.txt"
-        - "updateService.yaml"
+    - name: Include tasks to replace quay certificates
+      include_tasks:
+        name: replace-certificates.yml
 
-    - name: Replace pull secret with current host
-      ansible.builtin.replace:
-        path: /home/ec2-user/pull-secret.txt.test
-        regexp: "ip-.*-.*-.*-.*.ec2.internal:8443"
-        replace: "{{ ansible_env.HOSTNAME }}:{{quay_port}}"
-
+    - name: Include tasks to update oc mirror metadata files
+      include_tasks:
+        name: update-metadata-files.yml

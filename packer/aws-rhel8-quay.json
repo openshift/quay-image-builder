@@ -98,12 +98,12 @@
     {
       "type": "file",
       "source": "imageset-config.yaml",
-      "destination": "/tmp/imageset-config.yaml"
+      "destination": "/home/ec2-user/imageset-config.yaml"
     },
     {
       "type": "file",
       "source": "playbooks",
-      "destination": "/tmp"
+      "destination": "/home/ec2-user"
     },
     {
       "type": "file",
@@ -130,6 +130,7 @@
         "echo '*** Installing User Space Dependencies...'",
         "set -ex",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
+        "pip3 install --user --upgrade pip",
         "pip3 install --user wheel jinja2 awscli boto3",
         "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
       ]
@@ -155,10 +156,7 @@
         "systemctl enable quayinit.service",
         "ansible-galaxy role install redhatofficial.rhel8_stig",
         "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
-        "ansible-galaxy collection install community.general ansible.posix",
-        "ansible-playbook /tmp/playbooks/harden_quay.yaml",
-        "chmod 0644 /var/log/mirror-registry.log",
-        "chmod -R 0755 /tmp/playbooks"
+        "chmod 0644 /var/log/mirror-registry.log"
       ]
     },
     {
@@ -173,7 +171,8 @@
         "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
         "podman login --authfile=${HOME}/pull-secret.txt -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
         "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
-        "/usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
+        "#ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml",
+        "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
       ]
     },
     {

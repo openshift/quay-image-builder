@@ -8,7 +8,7 @@ ConditionPathExists=!/etc/sysconfig/rh-quay-firstboot
 
 [Service]
 Type=oneshot
-ExecStart=ansible-playbook --extra-vars 'launched_by_systemd=true' /tmp/playbooks/replace-quay-certificates.yaml
+ExecStart=ansible-playbook --extra-vars 'launched_by_systemd=true' /home/ec2-user/playbooks/firstboot.yaml
 
 [Install]
 WantedBy=multi-user.target default.target
