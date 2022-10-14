@@ -171,7 +171,7 @@
         "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
         "podman login --authfile=${HOME}/pull-secret.txt -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
         "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
-        "#ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml",
+        "ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml",
         "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
       ]
     },
