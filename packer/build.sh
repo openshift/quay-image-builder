@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+DEF_OCP_VER=4.11.8
+
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
 
 export PULL_SECRET="${PULL_SECRET:-/home/danclark/pull-secret.txt}"
@@ -13,7 +15,16 @@ REDHAT_ID="309956199498"
 # Current RHEL version to build with
 export RHEL_VER="8.6"
 
-export OCP_VER="${OCP_VER:-4.11}"
+export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"
+export OCP_MAJ_VER=$(echo "${OCP_VER}" | awk -F\. '{print $1"."$2}')
+
+export OCP_MIN_VER="${OCP_MIN_VER:-${DEF_OCP_VER}}"
+export OCP_MAX_VER="${OCP_MAX_VER:-${DEF_OCP_VER}}"
+
+echo OCP_VER=${OCP_VER}
+echo OCP_MAJ_VER=${OCP_MAJ_VER}
+echo OCP_MIN_VER=${OCP_MIN_VER}
+echo OCP_MAX_VER=${OCP_MAX_VER}
 
 if [ -z $AWS_ACCESS_KEY_ID ];
 then

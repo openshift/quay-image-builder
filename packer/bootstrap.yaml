@@ -6,7 +6,9 @@
   vars:
     dev_uri: "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"
     mirror_uri: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
-    ocp_ver: "4.11" # Overridden in the packer build
+    ocp_maj_ver: "4.11"   # Overridden in the packer build
+    ocp_min_ver: "4.11.8" # Overridden in the packer build
+    ocp_max_ver: "4.11.8" # Overridden in the packer build
     quay_root: /opt/quay
     reg_user: "init"
     reg_pass: "openshift"
@@ -65,8 +67,8 @@
         remote_src: true
       loop:
         - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-install-linux.tar.gz"
-        - "{{ mirror_uri }}/ocp/latest-{{ ocp_ver }}/openshift-client-linux.tar.gz"
+        - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-install-linux-{{ ocp_max_ver }}.tar.gz"
+        - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
@@ -221,8 +223,20 @@
         regexp: localhost
         replace: "{{ my_hostname }}"
 
-    - name: Replace stable-OCP_VERSION with actual version number
+    - name: Replace OCP_MAJ_VER with actual version number
       ansible.builtin.replace:
         path: /home/ec2-user/imageset-config.yaml
-        regexp: OCP_VERSION
-        replace: "{{ ocp_ver }}"
+        regexp: OCP_MAJ_VER
+        replace: "{{ ocp_maj_ver }}"
+
+    - name: Replace OCP_MIN_VER with actual version number
+      ansible.builtin.replace:
+        path: /home/ec2-user/imageset-config.yaml
+        regexp: OCP_MIN_VER
+        replace: "{{ ocp_min_ver }}"
+
+    - name: Replace OCP_MAX_VER with actual version number
+      ansible.builtin.replace:
+        path: /home/ec2-user/imageset-config.yaml
+        regexp: OCP_MAX_VER
+        replace: "{{ ocp_max_ver }}"

@@ -16,14 +16,23 @@ mv /home/ec2-user/oc-mirror-workspace/results-* /home/ec2-user/oc-mirror-workspa
 #rmdir /home/ec2-user/oc-mirror-workspace/publish
 
 # Copy the oc-mirror output as ansible template files
-cp -f /home/ec2-user/oc-mirror-workspace/results/imageContentSourcePolicy.yaml \
-      /home/ec2-user/playbooks/templates/imageContentSourcePolicy.yaml.j2
+if [[ -f /home/ec2-user/oc-mirror-workspace/results/imageContentSourcePolicy.yaml ]]
+then
+  cp -f /home/ec2-user/oc-mirror-workspace/results/imageContentSourcePolicy.yaml \
+        /home/ec2-user/playbooks/templates/imageContentSourcePolicy.yaml.j2
+fi
 
-cp -f /home/ec2-user/oc-mirror-workspace/results/updateService.yaml \
-      /home/ec2-user/playbooks/templates/updateService.yaml.j2
+if [[ -f /home/ec2-user/oc-mirror-workspace/results/updateService.yaml ]]
+then
+  cp -f /home/ec2-user/oc-mirror-workspace/results/updateService.yaml \
+        /home/ec2-user/playbooks/templates/updateService.yaml.j2
+fi
 
-cp -f /home/ec2-user/oc-mirror-workspace/results/mapping.txt \
-      /home/ec2-user/playbooks/templates/mapping.txt.j2
+if [[ -f /home/ec2-user/oc-mirror-workspace/results/mapping.txt ]]
+then
+  cp -f /home/ec2-user/oc-mirror-workspace/results/mapping.txt \
+        /home/ec2-user/playbooks/templates/mapping.txt.j2
+fi
 
 if [[ -f /home/ec2-user/oc-mirror-workspace/results/catalogSource-redhat-operator-index.yaml ]]
 then

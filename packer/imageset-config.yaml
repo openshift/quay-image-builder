@@ -3,14 +3,16 @@ kind: ImageSetConfiguration
 storageConfig:
   registry:
     imageURL: localhost:8443/oc-mirror-state:latest # Stores metadata in an image
-    skipTLS: true # Disable TLS certificate checking or use plain HTTP 
+    skipTLS: true
 mirror:
   platform:
     channels:
-      - name: stable-OCP_VERSION # References latest stable release
+      - name: stable-OCP_MAJ_VER
+        minVersion: OCP_MIN_VER
+        maxVersion: OCP_MAX_VER
     graph: true # Include Cincinnati upgrade graph image in imageset
   operators:
-    - catalog: registry.redhat.io/redhat/redhat-operator-index:vOCP_VERSION
+    - catalog: registry.redhat.io/redhat/redhat-operator-index:vOCP_MAJ_VER
       packages:
         - name: advanced-cluster-management
         - name: ansible-automation-platform-operator

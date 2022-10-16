@@ -13,7 +13,10 @@
     "subnet_id": "{{env `SUBNET_ID`}}",
     "source_ami": "{{env `SOURCE_AMI`}}",
     "pull_secret": "{{env `PULL_SECRET`}}",
-    "ocp_ver": "{{env `OCP_VER`}}"
+    "ocp_ver": "{{env `OCP_VER`}}",
+    "ocp_maj_ver": "{{env `OCP_MAJ_VER`}}",
+    "ocp_min_ver": "{{env `OCP_MIN_VER`}}",
+    "ocp_max_ver": "{{env `OCP_MAX_VER`}}"
   },
   "builders": [{
     "access_key": "{{user `aws_access_key`}}",
@@ -140,7 +143,9 @@
       "playbook_file": "./bootstrap.yaml",
       "extra_arguments": [
         "--extra-vars",
-        "\"ocp_ver={{ user `ocp_ver`}}\""
+        "\"ocp_maj_ver={{ user `ocp_maj_ver`}}\"",
+        "\"ocp_min_ver={{ user `ocp_min_ver`}}\"",
+        "\"ocp_max_ver={{ user `ocp_max_ver`}}\""
       ]
     },
     {
