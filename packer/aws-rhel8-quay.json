@@ -100,7 +100,7 @@
     },
     {
       "type": "file",
-      "source": "imageset-config.yaml",
+      "source": "imageset-config.yaml.processed",
       "destination": "/home/ec2-user/imageset-config.yaml"
     },
     {
@@ -132,10 +132,10 @@
       "inline": [
         "echo '*** Installing User Space Dependencies...'",
         "set -ex",
-        "ansible-galaxy role install redhatofficial.rhel8_stig",
+        "ansible-galaxy role install --force redhatofficial.rhel8_stig",
         "pip3 install --user --upgrade pip",
         "pip3 install --user wheel jinja2 awscli boto3",
-        "ansible-galaxy collection install amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
+        "ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix"
       ]
     },
     {
@@ -143,9 +143,7 @@
       "playbook_file": "./bootstrap.yaml",
       "extra_arguments": [
         "--extra-vars",
-        "\"ocp_maj_ver={{ user `ocp_maj_ver`}}\"",
-        "\"ocp_min_ver={{ user `ocp_min_ver`}}\"",
-        "\"ocp_max_ver={{ user `ocp_max_ver`}}\""
+        "\"ocp_maj_ver={{ user `ocp_maj_ver`}} ocp_min_ver={{ user `ocp_min_ver`}} ocp_max_ver={{ user `ocp_max_ver`}}\""
       ]
     },
     {
@@ -159,7 +157,6 @@
         "restorecon -v /etc/systemd/system/quayinit.service",
         "systemctl daemon-reload",
         "systemctl enable quayinit.service",
-        "ansible-galaxy role install redhatofficial.rhel8_stig",
         "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
         "chmod 0644 /var/log/mirror-registry.log"
       ]
