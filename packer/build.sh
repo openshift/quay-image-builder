@@ -66,6 +66,13 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"
 
+if [[ -f imageset-config.yaml.processed ]]
+then
+  echo "Preprocessed imageset already exists, skipping..."
+else
+  INDEX="redhat" OCP_MAJ_VER=${OCP_MAJ_VER} ./get_operator_versions.sh
+fi
+
 packer build ${PACKER_TEMPLATE} | tee packer.log
 
 exit 0
