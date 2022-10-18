@@ -18,8 +18,8 @@ export RHEL_VER="8.6"
 export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"
 export OCP_MAJ_VER=$(echo "${OCP_VER}" | awk -F\. '{print $1"."$2}')
 
-export OCP_MIN_VER="${OCP_MIN_VER:-${DEF_OCP_VER}}"
-export OCP_MAX_VER="${OCP_MAX_VER:-${DEF_OCP_VER}}"
+export OCP_MIN_VER="${OCP_MIN_VER:-${OCP_VER}}"
+export OCP_MAX_VER="${OCP_MAX_VER:-${OCP_VER}}"
 
 echo OCP_VER=${OCP_VER}
 echo OCP_MAJ_VER=${OCP_MAJ_VER}
