@@ -48,7 +48,7 @@
     - "{{ quay_root }}/quay-rootCA/rootCA.pem"
     - "{{ quay_root }}/quay-rootCA/rootCA.srl"
     - "{{ quay_root }}/quay-rootCA/rootCA.key"
-  
+
 - name: Create SSL Certs
   block:
     - name: Create necessary directory for Quay rootCA files
@@ -57,7 +57,7 @@
         path: "{{ quay_root }}/quay-rootCA"
         state: directory
         recurse: yes
-        
+
     - name: Create OpenSSL Config
       become: true
       template:
@@ -150,42 +150,42 @@
   when:
     - not (launched_by_systemd | bool)
 
-  - name: Wait for services to restart
-    pause:
-      minutes: 2
+- name: Wait for services to restart
+  pause:
+    minutes: 2
 
-  - name: Get Registry Username
-    shell: |
-      grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
-    register: reg_user_info
-    when:
-      - (reg_user is not defined) and (reg_pass is not defined)
+- name: Get Registry Username
+  shell: |
+    grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+  register: reg_user_info
+  when:
+    - (reg_user is not defined) and (reg_pass is not defined)
 
-  - name: Get Registry Password
-    shell: |
-      grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
-    register: reg_pass_info
-    when:
-      - (reg_user is not defined) and (reg_pass is not defined)
+- name: Get Registry Password
+  shell: |
+    grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+  register: reg_pass_info
+  when:
+    - (reg_user is not defined) and (reg_pass is not defined)
 
-  - name: Set registry username and password facts
-    set_fact:
-      reg_user: "{{ reg_user_info.stdout }}"
-      reg_pass: "{{ reg_pass_info.stdout }}"
-    when:
-      - (reg_user is not defined) and (reg_pass is not defined)
+- name: Set registry username and password facts
+  set_fact:
+    reg_user: "{{ reg_user_info.stdout }}"
+    reg_pass: "{{ reg_pass_info.stdout }}"
+  when:
+    - (reg_user is not defined) and (reg_pass is not defined)
 
-  - name: Remove existing pull secret file
-    file:
-      path: "/home/ec2-user/pull-secret.txt"
-      state: absent
+- name: Remove existing pull secret file
+  file:
+    path: "/home/ec2-user/pull-secret.txt"
+    state: absent
 
-  - name: Login to the registry and drop a pull secret in ec2-user home
-    containers.podman.podman_login:
-      registry: "{{ quay_host }}:{{ quay_port }}"
-      username: "{{ reg_user }}"
-      password: "{{ reg_pass }}"
-      authfile: "/home/ec2-user/pull-secret.txt"
+- name: Login to the registry and drop a pull secret in ec2-user home
+  containers.podman.podman_login:
+    registry: "{{ quay_host }}:{{ quay_port }}"
+    username: "{{ reg_user }}"
+    password: "{{ reg_pass }}"
+    authfile: "/home/ec2-user/pull-secret.txt"
 
   # Stop systemd from running this playbook
   # There is no check at the top for this so users can run
