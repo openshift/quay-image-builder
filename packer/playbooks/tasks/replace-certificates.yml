@@ -163,7 +163,7 @@
 
 - name: Get Registry Password
   shell: |
-    grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
+    grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}'
   register: reg_pass_info
   when:
     - (reg_user is not defined) and (reg_pass is not defined)
@@ -182,7 +182,7 @@
 
 - name: Login to the registry and drop a pull secret in ec2-user home
   containers.podman.podman_login:
-    registry: "{{ quay_host }}:{{ quay_port }}"
+    registry: "{{ quay_hostname }}:{{ quay_port }}"
     username: "{{ reg_user }}"
     password: "{{ reg_pass }}"
     authfile: "/home/ec2-user/pull-secret.txt"
