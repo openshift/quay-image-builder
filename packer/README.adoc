@@ -6,7 +6,9 @@
 
 . Install podman
 
-. Install `yq` and `ansible`, e.g. via pip
+. Install the following via pip:
+.. awscli
+.. yq
 
 . Install the https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/oc-mirror.tar.gz[latest stable version]
 of oc-mirror (4.11.0 or later)
@@ -28,8 +30,12 @@ cd packer/
 INDEX=redhat OCP_MAJ_VER=4.10 ./get_operator_versions.sh
 ----
 
-. Run the build.sh
+. Set AwS environment and run the build
 +
 ----
+export AWS_ACCESS_KEY_ID=<access key>
+export AWS_SECRET_ACCESS_KEY=<secret>
+export AWS_DEFAULT_REGION=us-east-1
+
 OCP_VER=4.10.36 PULL_SECRET=~/pull-secret.txt ./build.sh
 ----
