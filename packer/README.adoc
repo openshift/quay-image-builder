@@ -1,0 +1,35 @@
+= quay-image-builder
+
+== Setup
+
+. Install packer
+
+. Install podman
+
+. Install `yq` and `ansible`, e.g. via pip
+
+. Install the https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/oc-mirror.tar.gz[latest stable version]
+of oc-mirror (4.11.0 or later)
+
+. Download an OpenShift pull secret
+
+== Building with packer
+
+. Login with OpenShift pull secret:
++
+----
+cat ~/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json
+----
+
+. Create an imageset config:
++
+----
+cd packer/
+INDEX=redhat OCP_MAJ_VER=4.10 ./get_operator_versions.sh
+----
+
+. Run the build.sh
++
+----
+OCP_VER=4.10.36 PULL_SECRET=~/pull-secret.txt ./build.sh
+----

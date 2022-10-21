@@ -2,3 +2,4 @@ packer.log
 .oc-mirror.log
 *.log
 imageset-config.yaml.processed
+imageset-config.yaml.new
