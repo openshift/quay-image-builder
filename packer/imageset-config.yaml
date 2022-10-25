@@ -84,7 +84,7 @@ mirror:
               minVersion: node-maintenance-operator-VERSION
         - name: numaresources-operator
           channels:
-            - name: numaresources-operator-CHANNEL
+            - name: "numaresources-operator-CHANNEL"
               minVersion: numaresources-operator-VERSION
         - name: odf-multicluster-orchestrator
           channels:

@@ -84,7 +84,7 @@ mirror:
               minVersion: 4.10.0
         - name: numaresources-operator
           channels:
-            - name: 4.10
+            - name: "4.10"
               minVersion: 4.10.9
         - name: odf-multicluster-orchestrator
           channels:
