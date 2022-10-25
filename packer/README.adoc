@@ -30,7 +30,7 @@ cd packer/
 INDEX=redhat OCP_MAJ_VER=4.10 ./get_operator_versions.sh
 ----
 
-. Set AwS environment and run the build
+. Set AWS environment and run the build
 +
 ----
 export AWS_ACCESS_KEY_ID=<access key>
