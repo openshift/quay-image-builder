@@ -16,7 +16,8 @@
     "ocp_ver": "{{env `OCP_VER`}}",
     "ocp_maj_ver": "{{env `OCP_MAJ_VER`}}",
     "ocp_min_ver": "{{env `OCP_MIN_VER`}}",
-    "ocp_max_ver": "{{env `OCP_MAX_VER`}}"
+    "ocp_max_ver": "{{env `OCP_MAX_VER`}}",
+    "imageset_config_template": "{{env `IMAGESET_CONFIG_TEMPLATE`}}"
   },
   "builders": [{
     "access_key": "{{user `aws_access_key`}}",
@@ -100,7 +101,7 @@
     },
     {
       "type": "file",
-      "source": "imageset-config.yaml.processed",
+      "source": "{{user, `imageset_config_template`}}",
       "destination": "/home/ec2-user/imageset-config.yaml"
     },
     {
@@ -118,7 +119,7 @@
       "source": "update_mirror_metadata.sh",
       "destination": "/tmp/update_mirror_metadata.sh"
     },
-    {   
+    {
       "type": "shell",
       "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [

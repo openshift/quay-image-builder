@@ -27,7 +27,9 @@ cat ~/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json
 +
 ----
 cd packer/
-INDEX=redhat OCP_MAJ_VER=4.10 ./get_operator_versions.sh
+OCP_MAJ_VER=4.10
+INDEX=redhat ./get_operator_versions.sh
+mv imageset-config.yaml.processed imageset-config-templates/${OCP_MAJ_VER}-$(date "+%Y%m%d").yaml
 ----
 
 . Set AWS environment and run the build
@@ -37,5 +39,5 @@ export AWS_ACCESS_KEY_ID=<access key>
 export AWS_SECRET_ACCESS_KEY=<secret>
 export AWS_DEFAULT_REGION=us-east-1
 
-OCP_VER=4.10.36 PULL_SECRET=~/pull-secret.txt ./build.sh
+OCP_VER=4.10.36 IMAGESET_CONFIG_TEMPLATE=imageset-config-templates/4.10-20221025.yaml PULL_SECRET=~/pull-secret.txt ./build.sh
 ----
