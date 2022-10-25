@@ -101,7 +101,7 @@
     },
     {
       "type": "file",
-      "source": "{{user, `imageset_config_template`}}",
+      "source": "{{user `imageset_config_template`}}",
       "destination": "/home/ec2-user/imageset-config.yaml"
     },
     {
