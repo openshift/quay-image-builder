@@ -110,6 +110,14 @@
         owner: root
         group: root
 
+    - name: Set permissions for quay CA cert
+      become: true
+      ansible.builtin.file:
+        path: "{{ quay_root }}/quay-rootCA/rootCA.pem"
+        mode: u=rw,g=r,o=r
+        owner: root
+        group: root
+
 - name: Remove existing certificate copies
   become: true
   file:
