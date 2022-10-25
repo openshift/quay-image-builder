@@ -23,7 +23,8 @@ of oc-mirror (4.11.0 or later)
 cat ~/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json
 ----
 
-. Create an imageset config:
+. Optionally, create an imageset config to use for the build,
+or skip this and use an existing template in the next step:
 +
 ----
 cd packer/

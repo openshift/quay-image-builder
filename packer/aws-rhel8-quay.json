@@ -38,7 +38,7 @@
         "volume_size": 200,
         "encrypted": false,
         "volume_type": "gp2",
-        "delete_on_termination": false
+        "delete_on_termination": true
       }
     ],
     "launch_block_device_mappings": [

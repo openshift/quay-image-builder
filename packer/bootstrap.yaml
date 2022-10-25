@@ -33,16 +33,20 @@
 #        state: latest
 #        executable: pip3
 
-    - name: Install required packages
+    - name: Install container-tools module
+      become: true
+      ansible.builtin.dnf:
+        name: '@container-tools:rhel8'
+
+    - name: Install other required packages
       become: true
       ansible.builtin.dnf:
         name:
-          - podman
           - firewalld
           - git
           - vim
           - jq
-    
+
     - name: Enable firewalld service
       become: true
       ansible.builtin.systemd:
