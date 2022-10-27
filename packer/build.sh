@@ -47,7 +47,7 @@ fi
 # Get default VPC ID
 export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
   --query 'Vpcs[?IsDefault == `true`].VpcId' \
-  --output text) 
+  --output text)
 
 # Get subnet ID for az ${AWS_ZONE} in region ${AWS_DEFAULT_REGION}
 export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFAULT_VPC_ID}" \
@@ -65,13 +65,6 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS
 
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"
-
-if [[ -f imageset-config.yaml.processed ]]
-then
-  echo "Preprocessed imageset already exists, skipping..."
-else
-  INDEX="redhat" OCP_MAJ_VER=${OCP_MAJ_VER} ./get_operator_versions.sh
-fi
 
 packer build ${PACKER_TEMPLATE} | tee packer.log
 

@@ -1,0 +1,157 @@
+apiVersion: mirror.openshift.io/v1alpha2
+kind: ImageSetConfiguration
+storageConfig:
+  registry:
+    imageURL: localhost:8443/oc-mirror-state:latest # Stores metadata in an image
+    skipTLS: true
+mirror:
+  platform:
+    channels:
+      - name: stable-OCP_MAJ_VER
+        minVersion: OCP_MIN_VER
+        maxVersion: OCP_MAX_VER
+    graph: true # Include Cincinnati upgrade graph image in imageset
+  operators:
+    - catalog: registry.redhat.io/redhat/redhat-operator-index:vOCP_MAJ_VER
+      packages:
+        - name: advanced-cluster-management
+          channels:
+            - name: release-2.6
+              minVersion: 2.6.1
+        - name: ansible-automation-platform-operator
+          channels:
+            - name: stable-2.2-cluster-scoped
+              minVersion: 2.2.1+0.1661982152
+        - name: cincinnati-operator
+          channels:
+            - name: v1
+              minVersion: 4.9.1
+        - name: cluster-logging
+          channels:
+            - name: stable
+              minVersion: 5.5.3
+        - name: compliance-operator
+          channels:
+            - name: release-0.1
+              minVersion: 0.1.53
+        - name: elasticsearch-operator
+          channels:
+            - name: stable
+              minVersion: 5.5.3
+        - name: file-integrity-operator
+          channels:
+            - name: release-0.1
+              minVersion: 0.1.30
+        - name: mcg-operator
+          channels:
+            - name: stable-4.10
+              minVersion: 4.10.5
+        - name: nfd
+          channels:
+            - name: stable
+              minVersion: 4.10.0-202210061808
+        - name: rhacs-operator
+          channels:
+            - name: latest
+              minVersion: 3.72.1
+        - name: rhsso-operator
+          channels:
+            - name: stable
+              minVersion: 7.5.1-opr-010
+        - name: costmanagement-metrics-operator
+          channels:
+            - name: stable
+              minVersion: 1.1.4
+        - name: mtc-operator
+          channels:
+            - name: release-v1.7
+              minVersion: 1.7.3
+        - name: mtv-operator
+          channels:
+            - name: release-v2.3
+              minVersion: 2.3.3
+        - name: multicluster-engine
+          channels:
+            - name: stable-2.1
+              minVersion: 2.1.1
+        - name: node-healthcheck-operator
+          channels:
+            - name: candidate
+              minVersion: 0.2.0
+        - name: node-maintenance-operator
+          channels:
+            - name: stable
+              minVersion: 4.10.0
+        - name: numaresources-operator
+          channels:
+            - name: "4.10"
+              minVersion: 4.10.9
+        - name: odf-multicluster-orchestrator
+          channels:
+            - name: stable-4.10
+              minVersion: 4.10.7
+        - name: odr-cluster-operator
+          channels:
+            - name: stable-4.10
+              minVersion: 4.10.1
+        - name: odr-hub-operator
+          channels:
+            - name: stable-4.10
+              minVersion: 4.10.4
+        - name: openshift-cert-manager-operator
+          channels:
+            - name: tech-preview
+              minVersion: 1.7.1-1
+        - name: openshift-custom-metrics-autoscaler-operator
+          channels:
+            - name: stable
+              minVersion: 2.7.1
+        - name: openshift-gitops-operator
+          channels:
+            - name: latest
+              minVersion: 1.5.2
+        - name: openshift-pipelines-operator-rh
+          channels:
+            - name: pipelines-1.8
+              minVersion: 1.8.0
+        - name: openshift-secondary-scheduler-operator
+          channels:
+            - name: stable
+              minVersion: 1.0.1
+        - name: openshift-special-resource-operator
+          channels:
+            - name: stable
+              minVersion: 4.10.0-202210061437
+        - name: quay-bridge-operator
+          channels:
+            - name: stable-3.7
+              minVersion: 3.7.3
+        - name: quay-operator
+          channels:
+            - name: stable-3.7
+              minVersion: 3.7.9
+        - name: redhat-oadp-operator
+          channels:
+            - name: stable-1.1
+              minVersion: 1.0.3
+        - name: rh-service-binding-operator
+          channels:
+            - name: stable
+              minVersion: 0.6.0
+        - name: serverless-operator
+          channels:
+            - name: stable
+              minVersion: 1.21.0
+  additionalimages:
+    - name: registry.access.redhat.com/ubi8/ubi-micro
+    - name: registry.access.redhat.com/ubi8/ubi-minimal
+    - name: registry.access.redhat.com/ubi8/ubi-init
+    - name: registry.access.redhat.com/ubi8/s2i-core
+    - name: registry.access.redhat.com/ubi8/s2i-base
+    - name: registry.access.redhat.com/ubi8/pause
+    - name: registry.access.redhat.com/ubi9/ubi-micro
+    - name: registry.access.redhat.com/ubi9/ubi-minimal
+    - name: registry.access.redhat.com/ubi9/ubi-init
+    - name: registry.access.redhat.com/ubi9/s2i-core
+    - name: registry.access.redhat.com/ubi9/s2i-base
+    - name: registry.access.redhat.com/ubi9/pause
