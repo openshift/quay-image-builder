@@ -85,6 +85,26 @@
         mode: '0755'
       loop:
         - "{{ dev_uri }}/odo/v2.5.1/odo-linux-amd64"
+
+    - name: Create clients directory
+      become: true
+      file:
+        path: /opt/openshift/clients
+        state: directory
+        owner: 'ec2-user'
+        group: 'ec2-user'
+        mode: 0755
+
+    - name: Pull OCP Clients again but keep them as archives
+      ansible.builtin.get_url:
+        url: "{{ item }}"
+        dest: /opt/openshift/clients/
+      loop:
+        - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
+        - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-install-linux-{{ ocp_max_ver }}.tar.gz"
+        - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
+        - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
+        - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
     
     - name: Change file ownership, group and permissions
       become: true
