@@ -1,8 +1,0 @@
----
-
-  - name: Create S3 Bucket
-    amazon.aws.s3_bucket:
-      name: "{{ bucket_name }}"
-      policy: "{{ lookup('template','bucket_policy_config.json.j2') }}"
-      requester_pays: false
-      versioning: false
