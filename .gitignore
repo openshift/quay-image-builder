@@ -1,6 +1,5 @@
-*.swp
-bucket_policy_config.json
-component_config.yaml
-image_component_config.json
-image_recipe_config.json
-ansible.log
+packer.log
+.oc-mirror.log
+*.log
+imageset-config.yaml.processed
+imageset-config.yaml.new
