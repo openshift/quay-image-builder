@@ -120,6 +120,11 @@
       "destination": "/tmp/update_mirror_metadata.sh"
     },
     {
+      "type": "file",
+      "source": "get_ccoctl.sh",
+      "destination": "/tmp/get_ccoctl.sh"
+    },
+    {
       "type": "shell",
       "execute_command": "sudo -n sh '{{.Path}}'",
       "inline": [
@@ -183,7 +188,9 @@
       "execute_command": "/bin/sh -c {{ .Path }} {{ .Vars }}",
       "inline": [
         "echo '*** Updating Mirroring Content Metadata...'",
-        "bash /tmp/update_mirror_metadata.sh"
+        "bash /tmp/update_mirror_metadata.sh",
+        "echo '*** Extracting ccoctl binary from release image...'",
+        "bash /tmp/get_ccoctl.sh"
       ]
     },
     {
