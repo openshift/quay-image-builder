@@ -8,7 +8,7 @@ oc image extract $CCO_IMAGE --file="/usr/bin/ccoctl" -a /tmp/pull-secret.txt
 
 sudo mv ccoctl /usr/local/bin
 sudo chown root.root /usr/local/bin/ccoctl
-sudo chmod 0755 /usr/local/bin
-sudo restorecon -v /usr/local/bin
+sudo chmod 0755 /usr/local/bin/ccoctl
+sudo restorecon -v /usr/local/bin/ccoctl
 
 exit 0
