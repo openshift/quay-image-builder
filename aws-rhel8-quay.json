@@ -140,7 +140,7 @@
         "set -ex",
         "ansible-galaxy role install --force redhatofficial.rhel8_stig",
         "pip3 install --user --upgrade pip",
-        "pip3 install --user wheel jinja2 awscli boto3 openshift",
+        "pip3 install --user wheel jinja2 awscli boto3 openshift jmespath",
         "ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes"
       ]
     },
