@@ -141,7 +141,7 @@
         "ansible-galaxy role install --force redhatofficial.rhel8_stig",
         "pip3 install --user --upgrade pip",
         "pip3 install --user --upgrade wheel",
-        "pip3 install --user jinja2 awscli boto3 openshift jmespath",
+        "pip3 install --user jinja2 awscli boto3 openshift jmespath packaging resolvelib",
         "ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes"
       ]
     },
