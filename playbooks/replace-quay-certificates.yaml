@@ -10,7 +10,7 @@
       ansible.builtin.include_vars: defaults/main.yml
 
     - name: Include tasks to replace quay certificates
-      include_tasks: tasks/replace-certificates.yml
+      ansible.builtin.include_tasks: tasks/replace-certificates.yml
 
     - name: Include tasks to update oc mirror metadata files
-      include_tasks: tasks/update-metadata-files.yml
+      ansible.builtin.include_tasks: tasks/update-metadata-files.yml
