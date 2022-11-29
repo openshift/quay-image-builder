@@ -46,6 +46,7 @@
           - git
           - vim
           - jq
+          - mlocate
 
     - name: Enable firewalld service
       become: true
