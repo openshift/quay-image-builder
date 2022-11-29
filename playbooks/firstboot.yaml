@@ -1,14 +1,12 @@
 ---
-- hosts: default
+- hosts: localhost
   become: false
   gather_facts: true
 
   tasks:
 
     - name: Include tasks to replace quay certificates
-      include_tasks:
-        name: replace-certificates.yml
+      ansible.builtin.include_tasks: tasks/replace-certificates.yml
 
     - name: Include tasks to update oc mirror metadata files
-      include_tasks:
-        name: update-metadata-files.yml
+      ansible.builtin.include_tasks: tasks/update-metadata-files.yml
