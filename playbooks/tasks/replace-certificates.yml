@@ -1,4 +1,15 @@
 ---
+
+- name: Set quay_root if not defined
+  set_fact:
+    quay_root: "/opt/quay"
+  when: quay_root is undefined
+
+- name: Set quay_port if not defined
+  set_fact:
+    quay_port: 8443
+  when: quay_port is undefined
+
   # Only when running outside of systemd
 - name: Stop Quay services
   become: true
@@ -9,7 +20,7 @@
     - "quay-app.service"
     - "quay-redis.service"
     - "quay-postgres.service"
-    - "quay-app.service"
+    - "quay-pod.service"
   loop_control:
     pause: 5
   when:
@@ -167,21 +178,26 @@
     grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
   register: reg_user_info
   when:
-    - (reg_user is not defined) and (reg_pass is not defined)
+    - reg_user is not defined
 
 - name: Get Registry Password
   shell: |
     grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}'
   register: reg_pass_info
   when:
-    - (reg_user is not defined) and (reg_pass is not defined)
+    - reg_pass is not defined
 
-- name: Set registry username and password facts
+- name: Set registry username fact
   set_fact:
     reg_user: "{{ reg_user_info.stdout }}"
+  when:
+    - reg_user is not defined
+
+- name: Set registry password fact
+  set_fact:
     reg_pass: "{{ reg_pass_info.stdout }}"
   when:
-    - (reg_user is not defined) and (reg_pass is not defined)
+    - reg_pass is not defined
 
 - name: Remove existing pull secret file
   file:
