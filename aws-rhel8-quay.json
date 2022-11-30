@@ -159,6 +159,7 @@
       "inline": [
         "echo '*** Installing Mirror Registry...'",
         "set -ex",
+        "ansible-galaxy collection install containers.podman",
         "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
         "chmod 0644 /etc/systemd/system/quayinit.service",
         "restorecon -v /etc/systemd/system/quayinit.service",
