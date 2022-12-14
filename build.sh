@@ -65,6 +65,8 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS
   --output text --query 'Images[*].[ImageId]' \
   --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
 
+# Need to set these values or packer can timeout due to how long
+# it can take for the AMI to become ready in the AWS API/Console
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"
 
