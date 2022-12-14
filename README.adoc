@@ -47,3 +47,22 @@ export AWS_DEFAULT_REGION=us-east-1
 ----
 OCP_VER=4.10.36 IMAGESET_CONFIG_TEMPLATE=imageset-config-templates/4.10-20221025.yaml PULL_SECRET=~/pull-secret.txt ./build.sh
 ----
+
+[col=2*, separator=|]
+|===
+| Variable | Default | Definition
+| PACKER_TEMPLATE | aws-rhel8-quay.json | Packer template file
+| PULL_SECRET | ${HOME}/pull-secret.txt | Pull secret to mirror OpenShift container images
+| AWS_ZONE | c | Zone in AWS region
+| REDHAT_ID | 309956199498 | AWS Account owner of base AMI
+| RHEL_VER | 8.6 | RHEL version to build on (RHEL 9 is not yet supported in target region)
+| OCP_VER | 4.11.8 | OpenShift version to mirror and base binary imports like oc and openshift-install on
+| OCP_MAJ_VER | 4.11 | OpenShift Major Version
+| OCP_MIN_VER | Same as OCP_VER | Minimum version of OpenShift to mirror
+| OCP_MAX_VER | Same as OCP_VER | Maximum version of OpenShift to mirror
+| DEFAULT_VPC_ID | Dynamic Lookup | VPC to launch quay AMI in with packer
+| SUBNET_ID | Dynamic Lookup | Subnet to launch quay AMI in with packer
+| SOURCE_AMI | Dynamic Lookup | AMI to build quay on top of
+| AWS_MAX_ATTEMPTS | 120 | Max packer attempts when waiting for AMI to become ready
+| AWS_POLL_DELAY_SECONDS | 60 | Delay in seconds between checking if AMI is ready
+|===
