@@ -3,24 +3,31 @@
 DEF_OCP_VER=4.11.8
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
-
 export PULL_SECRET="${PULL_SECRET:-/home/danclark/pull-secret.txt}"
 
 # Use zone c for builds. Change to a different zone for your region if needed
 export AWS_ZONE="${AWS_ZONE:-c}"
 
 # Red Hat Account ID in AWS for AMI search
-REDHAT_ID="309956199498"
+export REDHAT_ID="${REDHAT_ID:-309956199498}"
 
 # Current RHEL version to build with
-export RHEL_VER="8.6"
+export RHEL_VER="${RHEL_VER:-8.6}"
 
+# Full OpenShift Version; i.e 4.11.8
 export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"
+
+# Major OpenShift Version; i.e 4.11
 export OCP_MAJ_VER=$(echo "${OCP_VER}" | awk -F\. '{print $1"."$2}')
 
+# By default these are equal which mirrors a single OpenShift Version
+# Setting them to different values; i.e 4.11.1 and 4.11.5
+# will cause the AMI to include the OpenShift Images for all versions
+# from 4.11.1 through 4.11.5 inclusive
 export OCP_MIN_VER="${OCP_MIN_VER:-${OCP_VER}}"
 export OCP_MAX_VER="${OCP_MAX_VER:-${OCP_VER}}"
 
+# Logging statements
 echo OCP_VER=${OCP_VER}
 echo OCP_MAJ_VER=${OCP_MAJ_VER}
 echo OCP_MIN_VER=${OCP_MIN_VER}
