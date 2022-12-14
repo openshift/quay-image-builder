@@ -4,7 +4,7 @@
 quay_root: "/opt/quay"
 
 # Quay system hostname
-#quay_hostname: "quay"
+# quay_hostname: "quay"
 
 # Quay server port
 quay_port: 8443
@@ -13,16 +13,12 @@ quay_port: 8443
 # Default is false so the playbooks can be run manually
 launched_by_systemd: false
 
-
 ocp_ver: "4.11" # Overridden in the packer build
 
 # If these are not set then assume the username/password is in the
 # /var/log/mirror-registry.log file
-#reg_user: "init"
-#reg_pass: "openshift"
-
-
-
+# reg_user: "init"
+# reg_pass: "openshift"
 
 
 dev_uri: "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"

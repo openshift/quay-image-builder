@@ -67,7 +67,7 @@
       ansible.builtin.file:
         path: "{{ quay_root }}/quay-rootCA"
         state: directory
-        recurse: yes
+        recurse: true
 
     - name: Create OpenSSL Config
       become: true

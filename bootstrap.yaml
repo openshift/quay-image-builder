@@ -18,14 +18,14 @@
     - name: Clean dnf cache
       become: true
       shell: dnf clean all
-    
+
     # TODO: Commented out for testing
     - name: Update all packages
       become: true
       ansible.builtin.dnf:
         name: "*"
         state: latest
-    
+
 #    - name: Update pip
 #      become: true
 #      ansible.builtin.pip:
@@ -63,7 +63,7 @@
         immediate: true
         state: enabled
         zone: "public"
-    
+
     - name: Pull OCP Dependencies
       become: true
       ansible.builtin.unarchive:
@@ -76,7 +76,7 @@
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
-    
+
       # Separate task because this doesn't come as an archive
     - name: Download odo
       become: true
@@ -106,7 +106,7 @@
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
-    
+
     - name: Change file ownership, group and permissions
       become: true
       ansible.builtin.file:
@@ -124,7 +124,7 @@
         - tkn-pac
         - odo
         - mirror-registry
-    
+
     - name: Restore SELinux context
       become: true
       ansible.builtin.command: restorecon -v /usr/local/bin/{{ item }}
@@ -137,19 +137,19 @@
         - tkn-pac
         - odo
         - mirror-registry
-    
+
     - name: Create quay directory
       become: true
       file:
         path: "{{ quay_root }}"
         state: directory
-    
+
 #    - name: Remove existing quay certs from system trust store
 #      become: true
 #      file:
 #        path: /etc/pki/ca-trust/source/anchors/quay.cert
 #        state: absent
-#    
+#
 #    - name: Copy quay cert to system trust store
 #      become: true
 #      copy:
@@ -159,15 +159,15 @@
 #        owner: root
 #        group: root
 #        mode: 0644
-#    
+#
 #    - name: Update system trust store
 #      become: true
 #      ansible.builtin.command: update-ca-trust
-#    
+#
 #    - name: Extract system trust store
 #      become: true
 #      ansible.builtin.command: update-ca-trust extract
-#    
+#
 #    - name: Cleanup files
 #      become: true
 #      file:
@@ -192,7 +192,7 @@
       ansible.builtin.git:
         repo: https://github.com/RedHatGov/openshift4-c2s.git
         dest: "{{ ansible_env.HOME }}/openshift4-c2s"
-    
+
 #    - name: Install pip modules
 #      ansible.builtin.pip:
 #        name:
@@ -202,34 +202,34 @@
 #          - "boto3"
 #        executable: pip3
 #        extra_args: "--user"
-    
+
     - name: Create containers directory
       file:
         path: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers"
         state: directory
-    
+
     - name: Copy pull secret
       copy:
         src: "/tmp/pull-secret.txt"
         dest: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
         remote_src: true
-    
+
     - name: Get Registry Username
       shell: |
         grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
       register: reg_user_info
-    
+
     - name: Get Registry Password
       shell: |
         grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
       register: reg_pass_info
-    
+
     - name: Set registry username and password facts
       set_fact:
         reg_user: "{{ reg_user_info.stdout }}"
         reg_pass: "{{ reg_pass_info.stdout }}"
-    
-      # The ansible_env.HOSTNAME doesn't get set for some reason
+
+    # The ansible_env.HOSTNAME doesn't get set for some reason
     - name: Get hostname
       ansible.builtin.command: hostname
       register: hostname_info
