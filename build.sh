@@ -71,7 +71,7 @@ if [ -z $SOURCE_AMI ];
 then
   export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
     --output text --query 'Images[*].[ImageId]' \
-    --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+    --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r | head -1)
 fi
 
 # Need to set these values or packer can timeout due to how long
