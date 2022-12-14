@@ -71,10 +71,6 @@
         regexp: localhost
         replace: "{{ ansible_env.HOSTNAME }}"
 
-#    - name: Mirror content
-#      shell: |
-#        /usr/local/bin/oc-mirror --config /tmp/imageset-config.yaml --dest-skip-tls --continue-on-error docker://{{ ansible_env.HOSTNAME }}:8443
-
     - name: Remove credentials
       file:
         path: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
