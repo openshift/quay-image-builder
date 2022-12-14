@@ -65,11 +65,6 @@ export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS
   --output text --query 'Images[*].[ImageId]' \
   --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
 
-# Hardened AMI in personal account
-#export SOURCE_AMI="ami-063851ca4aec10974"
-# Hardened AMI in Stratosphere account
-#export SOURCE_AMI="ami-04a4e4f63134e75fd"
-
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"
 
