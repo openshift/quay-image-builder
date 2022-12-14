@@ -51,19 +51,28 @@ then
   exit 1
 fi
 
-# Get default VPC ID
-export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
-  --query 'Vpcs[?IsDefault == `true`].VpcId' \
-  --output text)
+if [ -z $DEFAULT_VPC_ID ];
+then
+  # Get default VPC ID
+  export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
+    --query 'Vpcs[?IsDefault == `true`].VpcId' \
+    --output text)
+fi
 
-# Get subnet ID for az ${AWS_ZONE} in region ${AWS_DEFAULT_REGION}
-export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFAULT_VPC_ID}" \
-  --query "Subnets[?AvailabilityZone == '${AWS_DEFAULT_REGION}${AWS_ZONE}'].SubnetId" \
-  --output text)
+if [ -z $SUBNET_ID ];
+then
+  # Get subnet ID for az ${AWS_ZONE} in region ${AWS_DEFAULT_REGION}
+  export SUBNET_ID=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${DEFAULT_VPC_ID}" \
+    --query "Subnets[?AvailabilityZone == '${AWS_DEFAULT_REGION}${AWS_ZONE}'].SubnetId" \
+    --output text)
+fi
 
-export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
-  --output text --query 'Images[*].[ImageId]' \
-  --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+if [ -z $SOURCE_AMI ];
+then
+  export SOURCE_AMI=$(aws ec2 describe-images --owners ${REDHAT_ID} --region ${AWS_DEFAULT_REGION} \
+    --output text --query 'Images[*].[ImageId]' \
+    --filters "Name=name,Values=RHEL-${RHEL_VER}?*HVM-*Hourly*" Name=architecture,Values=x86_64 | sort -r)
+fi
 
 # Need to set these values or packer can timeout due to how long
 # it can take for the AMI to become ready in the AWS API/Console
