@@ -3,7 +3,7 @@
 DEF_OCP_VER=4.11.8
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
-export PULL_SECRET="${PULL_SECRET:-/home/danclark/pull-secret.txt}"
+export PULL_SECRET="${PULL_SECRET:-${HOME}/pull-secret.txt}"
 
 # Use zone c for builds. Change to a different zone for your region if needed
 export AWS_ZONE="${AWS_ZONE:-c}"
