@@ -5,6 +5,9 @@
 
   tasks:
 
+    - name: Include vars
+      ansible.builtin.include_vars: defaults/main.yml
+
     - name: Include tasks to replace quay certificates
       ansible.builtin.include_tasks: tasks/replace-certificates.yml
 
