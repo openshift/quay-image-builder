@@ -79,6 +79,6 @@ fi
 export AWS_MAX_ATTEMPTS="120"
 export AWS_POLL_DELAY_SECONDS="60"
 
-packer build ${PACKER_TEMPLATE} | tee packer.log
+/usr/bin/packer build ${PACKER_TEMPLATE} | tee packer.log
 
 exit 0
