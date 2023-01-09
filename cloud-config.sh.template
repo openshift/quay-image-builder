@@ -1,0 +1,27 @@
+#!/bin/bash
+
+touch /var/log/dan.log
+chmod 0644 /var/log/dan.log
+echo "Running cloud init with dan's ec2 commands" >> /var/log/dan.log
+
+# Need to install python and pip modules in the same way the bootstrap.yaml would do
+# for consistency. Need the awscli to associate the EIP address in cloud-init
+dnf -y install python38
+
+# Run these commands as the ec2-user since the build will install these
+# dependencies for the ec2-user as well which should save time and not install
+# them twice
+sudo -u ec2-user pip3 install --user --upgrade pip
+sudo -u ec2-user pip3 install --user --upgrade wheel
+sudo -u ec2-user pip3 install --user jinja2 awscli boto3 openshift jmespath packaging resolvelib
+
+export AWS_DEFAULT_REGION=$(curl http://169.254.169.254/latest/meta-data/placement/region/)
+
+sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 describe-instances \
+  --instance-ids $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") 2>&1 | tee /var/log/dan.log
+
+sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 associate-address \
+  --instance-id $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") \
+  --allocation-id eipalloc-abc123 2>&1 | tee /var/log/dan.log
+
+exit 0

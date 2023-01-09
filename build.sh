@@ -27,6 +27,14 @@ export OCP_MAJ_VER=$(echo "${OCP_VER}" | awk -F\. '{print $1"."$2}')
 export OCP_MIN_VER="${OCP_MIN_VER:-${OCP_VER}}"
 export OCP_MAX_VER="${OCP_MAX_VER:-${OCP_VER}}"
 
+# AWS EIP Configuration
+export USER_DATA_FILE="cloud-config.sh"
+# Example AWS EIP allocation ID
+#export EIP_ALLOC=eipalloc-abc123
+
+# The IAM instance profile needs to have permissions to associate an EIP with an instance
+export IAM_INSTANCE_PROFILE="${IAM_INSTANCE_PROFILE:-packer}"
+
 # Logging statements
 echo OCP_VER=${OCP_VER}
 echo OCP_MAJ_VER=${OCP_MAJ_VER}
@@ -50,6 +58,19 @@ then
   echo "AWS_DEFAULT_REGION Required"
   exit 1
 fi
+
+if [ -z $EIP_ALLOC ];
+then
+  echo "EIP_ALLOC Required"
+  exit 1
+fi
+
+# Obtain the IP address associated with the EIP Allocation ID
+echo "Get EIP Address"
+export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
+rm -f cloud-config.sh
+sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > cloud-config.sh
+chmod 0755 cloud-config.sh
 
 if [ -z $DEFAULT_VPC_ID ];
 then
@@ -76,8 +97,8 @@ fi
 
 # Need to set these values or packer can timeout due to how long
 # it can take for the AMI to become ready in the AWS API/Console
-export AWS_MAX_ATTEMPTS="120"
-export AWS_POLL_DELAY_SECONDS="60"
+export AWS_MAX_ATTEMPTS="240"
+export AWS_POLL_DELAY_SECONDS="30"
 
 packer build ${PACKER_TEMPLATE} | tee packer.log
 
