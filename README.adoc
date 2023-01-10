@@ -45,7 +45,7 @@ export AWS_DEFAULT_REGION=us-east-1
 . Run the packer build
 +
 ----
-OCP_VER=4.10.36 IMAGESET_CONFIG_TEMPLATE=imageset-config-templates/4.10-20221025.yaml PULL_SECRET=~/pull-secret.txt ./build.sh
+OCP_VER=4.10.36 IMAGESET_CONFIG_TEMPLATE=imageset-config-templates/4.10-20221025.yaml PULL_SECRET=~/pull-secret.txt EIP_ALLOC=eipalloc-abc123 ./build.sh
 ----
 
 [col=2*, separator=|]
