@@ -122,6 +122,11 @@
     },
     {
       "type": "file",
+      "source": "quayinit.sh",
+      "destination": "/tmp/quayinit.sh"
+    },
+    {
+      "type": "file",
       "source": "update_mirror_metadata.sh",
       "destination": "/tmp/update_mirror_metadata.sh"
     },
@@ -167,12 +172,12 @@
         "set -ex",
         "ansible-galaxy collection install containers.podman",
         "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
+        "mv /tmp/quayinit.sh /usr/bin/quayinit.sh",
         "chmod 0644 /etc/systemd/system/quayinit.service",
-        "restorecon -v /etc/systemd/system/quayinit.service",
+        "chmod 0755 /usr/bin/quayinit.sh",
+        "restorecon -v /etc/systemd/system/quayinit.service /usr/bin/quayinit.sh",
         "systemctl daemon-reload",
-        "systemctl enable quayinit.service",
-        "/usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee /var/log/mirror-registry.log",
-        "chmod 0644 /var/log/mirror-registry.log"
+        "systemctl enable quayinit.service"
       ]
     },
     {
@@ -183,20 +188,15 @@
         "set -ex",
         "mkdir -p ${XDG_RUNTIME_DIR}/containers || true",
         "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
-        "export REG_USER=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}')",
-        "export REG_PASS=$(grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $2}')",
-        "podman login --authfile=${HOME}/pull-secret.txt -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
-        "podman login -u=${REG_USER} -p=${REG_PASS} --tls-verify=false ${HOSTNAME}:8443",
-        "ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml",
-        "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --dest-skip-tls --continue-on-error docker://${HOSTNAME}:8443 || true"
+        "echo 'Run hardening playbook if AMI has not already been hardened'",
+        "if [ ! -e /etc/sysconfig/rh-quay-hardened ]; then ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml; fi",
+        "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --continue-on-error file://archives || true"
       ]
     },
     {
       "type": "shell",
       "execute_command": "/bin/sh -c {{ .Path }} {{ .Vars }}",
       "inline": [
-        "echo '*** Updating Mirroring Content Metadata...'",
-        "bash /tmp/update_mirror_metadata.sh",
         "echo '*** Extracting ccoctl binary from release image...'",
         "bash /tmp/get_ccoctl.sh"
       ]

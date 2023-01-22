@@ -4,7 +4,7 @@
   gather_facts: true
   connection: local
   vars:
-    dev_uri: "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients"
+    dev_uri: "https://developers.redhat.com/content-gateway/rest/mirror2/pub/openshift-v4/clients"
     mirror_uri: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients"
     ocp_maj_ver: "4.11"   # Overridden in the packer build
     ocp_min_ver: "4.11.8" # Overridden in the packer build
@@ -12,6 +12,7 @@
     quay_root: /opt/quay
     reg_user: "init"
     reg_pass: "openshift"
+    oc_mirror_dir: "/opt/openshift/mirror"
 
   tasks:
 
@@ -25,13 +26,6 @@
       ansible.builtin.dnf:
         name: "*"
         state: latest
-
-#    - name: Update pip
-#      become: true
-#      ansible.builtin.pip:
-#        name: pip
-#        state: latest
-#        executable: pip3
 
     - name: Install container-tools module
       become: true
@@ -71,7 +65,7 @@
         dest: /usr/local/bin
         remote_src: true
       loop:
-        - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
+        - "{{ dev_uri }}/mirror-registry/latest/mirror-registry.tar.gz"
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-install-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
@@ -85,7 +79,7 @@
         dest: /usr/local/bin/odo
         mode: '0755'
       loop:
-        - "{{ dev_uri }}/odo/v2.5.1/odo-linux-amd64"
+        - "{{ dev_uri }}/odo/latest/odo-linux-amd64"
 
     - name: Create clients directory
       become: true
@@ -101,7 +95,7 @@
         url: "{{ item }}"
         dest: /opt/openshift/clients/
       loop:
-        - "{{ dev_uri }}/mirror-registry/1.2.6/mirror-registry.tar.gz"
+        - "{{ dev_uri }}/mirror-registry/latest/mirror-registry.tar.gz"
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-install-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/latest-4.11/oc-mirror.tar.gz"
@@ -144,45 +138,6 @@
         path: "{{ quay_root }}"
         state: directory
 
-#    - name: Remove existing quay certs from system trust store
-#      become: true
-#      file:
-#        path: /etc/pki/ca-trust/source/anchors/quay.cert
-#        state: absent
-#
-#    - name: Copy quay cert to system trust store
-#      become: true
-#      copy:
-#        src: /opt/quay/quay-config/ssl.cert
-#        dest: /etc/pki/ca-trust/source/anchors/quay.cert
-#        remote_src: true
-#        owner: root
-#        group: root
-#        mode: 0644
-#
-#    - name: Update system trust store
-#      become: true
-#      ansible.builtin.command: update-ca-trust
-#
-#    - name: Extract system trust store
-#      become: true
-#      ansible.builtin.command: update-ca-trust extract
-#
-#    - name: Cleanup files
-#      become: true
-#      file:
-#        path: "{{ item }}"
-#        state: absent
-#      loop:
-#        - README.md
-#        - LICENSE
-#        - execution-environment.tar
-#        - image-archive.tar
-#        - pause.tar
-#        - postgres.tar
-#        - quay.tar
-#        - redis.tar
-
     - name: Create directory for git clone
       file:
         path: "{{ ansible_env.HOME }}/openshift4-c2s"
@@ -192,16 +147,6 @@
       ansible.builtin.git:
         repo: https://github.com/RedHatGov/openshift4-c2s.git
         dest: "{{ ansible_env.HOME }}/openshift4-c2s"
-
-#    - name: Install pip modules
-#      ansible.builtin.pip:
-#        name:
-#          - "wheel"
-#          - "jinja2"
-#          - "awscli"
-#          - "boto3"
-#        executable: pip3
-#        extra_args: "--user"
 
     - name: Create containers directory
       file:
@@ -213,40 +158,6 @@
         src: "/tmp/pull-secret.txt"
         dest: "{{ ansible_env.XDG_RUNTIME_DIR }}/containers/auth.json"
         remote_src: true
-
-    - name: Get Registry Username
-      shell: |
-        grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
-      register: reg_user_info
-
-    - name: Get Registry Password
-      shell: |
-        grep -o '(.*, .*)' /var/log/mirror-registry.log | sed 's|[(),]||g' | awk '{print $1}'
-      register: reg_pass_info
-
-    - name: Set registry username and password facts
-      set_fact:
-        reg_user: "{{ reg_user_info.stdout }}"
-        reg_pass: "{{ reg_pass_info.stdout }}"
-
-    # The ansible_env.HOSTNAME doesn't get set for some reason
-    - name: Get hostname
-      ansible.builtin.command: hostname
-      register: hostname_info
-
-    - name: Set hostname fact
-      set_fact:
-        my_hostname: "{{ hostname_info.stdout }}"
-
-    - name: Show hostname var
-      debug:
-        var: my_hostname
-
-    - name: Replace localhost with actual hostname
-      ansible.builtin.replace:
-        path: /home/ec2-user/imageset-config.yaml
-        regexp: localhost
-        replace: "{{ my_hostname }}"
 
     - name: Replace OCP_MAJ_VER with actual version number
       ansible.builtin.replace:
@@ -265,3 +176,14 @@
         path: /home/ec2-user/imageset-config.yaml
         regexp: OCP_MAX_VER
         replace: "{{ ocp_max_ver }}"
+
+    - name: Create directory for oc-mirror images
+      file:
+        path: "{{ oc_mirror_dir }}"
+        state: directory
+
+    - name: Replace DATA_TMP with actual directory for mirror
+      ansible.builtin.replace:
+        path: /home/ec2-user/imageset-config.yaml
+        regexp: DATA_TMP
+        replace: "{{ oc_mirror_dir }}"
