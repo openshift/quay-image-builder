@@ -2,16 +2,11 @@
 Description=Configure Quay on FirstBoot
 Wants=network.target
 After=network-online.target
-Before=quay-pod.service
-Before=quay-app.service
-Before=quay-redis.service
-Before=quay-postgres.service
-Before=systemd-user-sessions.service
 ConditionPathExists=!/etc/sysconfig/rh-quay-firstboot
 
 [Service]
 Type=oneshot
-ExecStart=ansible-playbook --connection=local --extra-vars 'launched_by_systemd=true' /home/ec2-user/playbooks/firstboot.yaml
+ExecStart=/usr/bin/quayinit.sh
 
 [Install]
 WantedBy=multi-user.target default.target
