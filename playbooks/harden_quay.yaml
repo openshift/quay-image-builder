@@ -24,3 +24,16 @@
         accounts_password_minlen_login_defs: false
         require_emergency_target_auth: false
         require_singleuser_auth: false
+        accounts_minimum_age_login_defs: false
+        accounts_maximum_age_login_defs: false
+        accounts_logon_fail_delay: false
+        sshd_disable_root_login: false
+
+  tasks:
+
+      # Create file to indicate hardening has been completed
+    - name: Touch file to indicate hardening has been done
+      ansible.builtin.file:
+        path: /etc/sysconfig/rh-quay-hardened
+        state: touch
+        mode: u=rw,g=r,o=r
