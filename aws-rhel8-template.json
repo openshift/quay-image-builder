@@ -1,0 +1,150 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "username": "{{env `USERNAME`}}",
+    "region": "{{env `AWS_DEFAULT_REGION`}}",
+    "ami_description": "RHEL 8 hardened template image",
+    "purpose": "RHEL 8 base image with hardening applied for use with the quay mirror registry",
+    "os": "RHEL",
+    "os_version": "8",
+    "release": "8.7",
+    "vpc_id": "{{env `DEAFULT_VPC_ID`}}",
+    "subnet_id": "{{env `SUBNET_ID`}}",
+    "source_ami": "{{env `SOURCE_AMI`}}",
+    "pull_secret": "{{env `PULL_SECRET`}}",
+    "user_data_file": "{{env `USER_DATA_FILE`}}",
+    "ssh_host": "{{env `EIP_ADDRESS`}}",
+    "iam_instance_profile": "{{env `IAM_INSTANCE_PROFILE`}}"
+  },
+  "builders": [{
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "ami_name": "Quay Registry for OCP4 {{user `ocp_ver`}} {{isotime \"2006-01-02-150405\"}}",
+    "ami_description": "Quay Registry for OCP4 {{user `ocp_ver`}} {{isotime \"2006-01-02-150405\"}}",
+    "instance_type": "m5.xlarge",
+    "source_ami": "{{user `source_ami`}}",
+    "type": "amazon-ebs",
+    "region": "{{user `region`}}",
+    "vpc_id": "{{ user `vpc_id` }}",
+    "subnet_id": "{{ user `subnet_id` }}",
+    "associate_public_ip_address": true,
+    "user_data_file": "{{ user `user_data_file` }}",
+    "iam_instance_profile": "{{ user `iam_instance_profile` }}",
+    "ssh_host": "{{ user `ssh_host` }}",
+    "ami_virtualization_type": "hvm",
+    "ami_block_device_mappings": [
+      {
+        "device_name": "/dev/sda1",
+        "volume_size": 50,
+        "encrypted": false,
+        "volume_type": "gp2",
+        "delete_on_termination": true
+      }
+    ],
+    "launch_block_device_mappings": [
+      {
+        "device_name": "/dev/sda1",
+        "volume_size": 50,
+        "encrypted": false,
+        "volume_type": "gp2",
+        "delete_on_termination": true
+      }
+    ],
+    "ebs_optimized": true,
+    "ena_support": true,
+    "force_delete_snapshot": true,
+    "encrypt_boot": false,
+    "run_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "run_volume_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "snapshot_tags": {
+      "Creator": "{{user `username`}}",
+      "OS": "{{user `os`}}",
+      "OS_Version": "{{user `os_version`}}",
+      "Release": "{{user `release`}}",
+      "Base_AMI_Name": "{{ .SourceAMIName }}",
+      "Purpose": "{{user `purpose`}}",
+      "Builder": "Packer {{packer_version}}"
+    },
+    "ssh_username": "ec2-user",
+    "ssh_pty": "true"
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "playbooks",
+      "destination": "/home/ec2-user"
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -n sh '{{.Path}}'",
+      "inline": [
+        "echo '*** Installing updates...'",
+        "dnf -y update",
+        "echo '*** Installing Base Dependencies...'",
+        "dnf -y install ansible-core python38"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "echo '*** Installing User Space Dependencies...'",
+        "set -ex",
+        "pip3 install --user --upgrade pip",
+        "pip3 install --user --upgrade wheel",
+        "pip3 install --user jinja2 jmespath",
+        "ansible-galaxy role install --force redhatofficial.rhel8_stig",
+        "ansible-galaxy collection install --upgrade community.crypto community.general ansible.posix"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "/bin/sh -c {{ .Path }} {{ .Vars }}",
+      "inline": [
+        "echo '*** Applying RHEL 8 STIG Hardening...'",
+        "set -ex",
+        "ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -n sh '{{.Path}}'",
+      "inline": [
+        "echo '** Shreding sensitive data ...'",
+        "dnf clean all",
+        "rm -rf /var/cache/yum /var/cache/dnf",
+        "rm -rf /home/ec2-user/playbooks",
+        "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
+        "shred -u /root/.*history /home/*/.*history",
+        "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
+        "sync; sleep 1; sync"
+      ]
+    }
+  ]
+}
+
