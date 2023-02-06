@@ -145,7 +145,7 @@
 
     - name: Read-write git checkout from github
       ansible.builtin.git:
-        repo: https://github.com/RedHatGov/openshift4-c2s.git
+        repo: https://github.com/openshift/c2s-install.git
         dest: "{{ ansible_env.HOME }}/openshift4-c2s"
 
     - name: Create containers directory
