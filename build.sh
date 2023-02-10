@@ -65,11 +65,27 @@ then
   exit 1
 fi
 
+if [ -z $RHN_USER ];
+then
+  echo "RHN_USER Required"
+  exit 1
+fi
+
+if [ -z $RHN_PASSWD ];
+then
+  echo "RHN_PASSWD Required"
+  exit 1
+fi
+
 # Obtain the IP address associated with the EIP Allocation ID
 echo "Get EIP Address"
 export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
 rm -f cloud-config.sh
-sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > cloud-config.sh
+cp cloud-config.sh.template cloud-config.sh
+sed -i "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh
+sed -i "s|RHN_USER|${RHN_USER}|g" cloud-config.sh
+sed -i "s|RHN_PASSWD|${RHN_PASSWD}|g" cloud-config.sh
+
 chmod 0755 cloud-config.sh
 
 if [ -z $DEFAULT_VPC_ID ];

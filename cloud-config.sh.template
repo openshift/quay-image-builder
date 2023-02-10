@@ -1,32 +1,62 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 LOG="/var/log/packer_init.log"
 touch "${LOG}"
 chmod 0644 "${LOG}"
 echo "Running cloud init to attach AWS EIP" >> "${LOG}"
 
+currentscript="$0"
+
+# Function that is called when the script exits:
+function finish {
+    echo "Securely shredding ${currentscript}"; shred -u ${currentscript};
+}
+
+{
+echo '*** Configuring Subscription Manager... ***'
+
+sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/*.repo
+sed -i 's|enabled = 1|enabled = 0|g' /etc/yum.repos.d/*.repo
+
+# RHN_USER and RHN_PASSWD will be replaced by a sed command in the build.sh
+subscription-manager register --username 'RHN_USER' --password 'RHN_PASSWD'
+subscription-manager config --rhsm.manage_repos=1
+subscription-manager repos --enable=rhel-8-for-x86_64-baseos-rpms \
+    --enable=rhel-8-for-x86_64-appstream-rpms \
+    --enable=rhocp-4.11-for-rhel-8-x86_64-rpms \
+    --enable=ansible-2-for-rhel-8-x86_64-rpms
+
+echo '*** Installing Base Dependencies... ***'
+# Need to install python and pip modules in the same way the bootstrap.yaml would do
+# for consistency. Need the awscli to associate the EIP address in cloud-init
+dnf -y install ansible-core python39
+
 # Hardening is causing this to be an issue
 # TODO: Find hardening rule that causes this issue
 chage -M 99999 root
 
-# Need to install python and pip modules in the same way the bootstrap.yaml would do
-# for consistency. Need the awscli to associate the EIP address in cloud-init
-dnf -y install python38
-
+echo '*** Installing python dependencies... ***'
 # Run these commands as the ec2-user since the build will install these
 # dependencies for the ec2-user as well which should save time and not install
 # them twice
 sudo -u ec2-user pip3 install --user --upgrade pip
 sudo -u ec2-user pip3 install --user --upgrade wheel
 sudo -u ec2-user pip3 install --user --upgrade jinja2 awscli boto3 openshift jmespath packaging resolvelib
+sudo -u ec2-user ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes
+sudo -u ec2-user ansible-galaxy role install --force redhatofficial.rhel8_stig
 
+echo '*** Associating Elastic IP Address with instance... ***'
+# Determine what region the instance is in
 export AWS_DEFAULT_REGION=$(curl http://169.254.169.254/latest/meta-data/placement/region/)
 
+# Determine instance ID
 sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 describe-instances \
   --instance-ids $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") 2>&1 | tee -a "${LOG}"
 
+# Associate Elastic IP Address with the instance
 sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 associate-address \
   --instance-id $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") \
   --allocation-id eipalloc-abc123 2>&1 | tee -a "${LOG}"
-
-exit 0
+} 2>&1 >> "${LOG}"
+# Call the secure shred function to delete self because script contains RHN user and passwd
+trap finish EXIT
