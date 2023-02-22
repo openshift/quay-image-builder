@@ -5,6 +5,13 @@ touch "${LOG}"
 chmod 0644 "${LOG}"
 echo "Running cloud init to attach AWS EIP" >> "${LOG}"
 
+currentscript="$0"
+
+# Function that is called when the script exits:
+function finish {
+    echo "Securely shredding ${currentscript}"; shred -u ${currentscript};
+}
+
 {
 # Hardening is causing this to be an issue
 # TODO: Find hardening rule that causes this issue
@@ -60,4 +67,5 @@ sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/
   --allocation-id eipalloc-abc123 2>&1 | tee -a "${LOG}"
 } 2>&1 >> "${LOG}"
 
-exit 0
+# Call the secure shred function to delete self because script contains RHN user and passwd
+trap finish EXIT
