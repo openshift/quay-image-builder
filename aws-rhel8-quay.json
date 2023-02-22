@@ -136,27 +136,6 @@
       "destination": "/tmp/get_ccoctl.sh"
     },
     {
-      "type": "shell",
-      "execute_command": "sudo -n sh '{{.Path}}'",
-      "inline": [
-        "echo '*** Installing Base Dependencies...'",
-        "set -ex",
-        "dnf -y install ansible-core python38"
-      ]
-    },
-    {
-      "type": "shell",
-      "inline": [
-        "echo '*** Installing User Space Dependencies...'",
-        "set -ex",
-        "ansible-galaxy role install --force redhatofficial.rhel8_stig",
-        "pip3 install --user --upgrade pip",
-        "pip3 install --user --upgrade wheel",
-        "pip3 install --user jinja2 awscli boto3 openshift jmespath packaging resolvelib",
-        "ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes"
-      ]
-    },
-    {
       "type": "ansible-local",
       "playbook_file": "./bootstrap.yaml",
       "extra_arguments": [
@@ -170,7 +149,6 @@
       "inline": [
         "echo '*** Installing Mirror Registry...'",
         "set -ex",
-        "ansible-galaxy collection install containers.podman",
         "mv /tmp/quayinit.service /etc/systemd/system/quayinit.service",
         "mv /tmp/quayinit.sh /usr/bin/quayinit.sh",
         "chmod 0644 /etc/systemd/system/quayinit.service",
@@ -208,11 +186,13 @@
         "echo '** Shreding sensitive data ...'",
         "dnf clean all",
         "rm -rf /var/cache/yum /var/cache/dnf",
-        "shred -u /etc/ssh/*_key /etc/ssh/*_key.pub",
-        "shred -u /root/.*history /home/*/.*history",
-        "shred -u /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
-        "shred -u /tmp/pull-secret.txt",
-        "shred -u /var/run/user/1000/containers/auth.json",
+        "shred -uf /tmp/key/rh-cdn.pem",
+        "shred -uf /etc/yum.repos.d/quay_image.repo",
+        "shred -uf /etc/ssh/*_key /etc/ssh/*_key.pub",
+        "shred -uf /root/.*history /home/*/.*history",
+        "shred -uf /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys",
+        "shred -uf /tmp/pull-secret.txt",
+        "shred -uf /var/run/user/1000/containers/auth.json",
         "sync; sleep 1; sync"
       ]
     }

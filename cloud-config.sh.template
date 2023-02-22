@@ -5,28 +5,59 @@ touch "${LOG}"
 chmod 0644 "${LOG}"
 echo "Running cloud init to attach AWS EIP" >> "${LOG}"
 
+{
 # Hardening is causing this to be an issue
 # TODO: Find hardening rule that causes this issue
 chage -M 99999 root
 
+sudo sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/*.repo
+
+sudo mkdir /tmp/key
+cat << 'EOF' > /tmp/rh-cdn.pem
+CDN_PEM_CONTENT
+EOF
+
+sudo mv /tmp/rh-cdn.pem /tmp/key/rh-cdn.pem
+sudo chmod 0755 /tmp/key
+sudo chown root.root /tmp/key/rh-cdn.pem
+sudo chmod 0644 /tmp/key/rh-cdn.pem
+sudo restorecon -v /tmp/key/rh-cdn.pem
+
+cat << 'EOF' > /tmp/quay_image.repo
+YUM_REPO_CONTENT
+EOF
+
+sudo mv /tmp/quay_image.repo /etc/yum.repos.d/quay_image.repo
+sudo chown root.root /etc/yum.repos.d/quay_image.repo
+sudo chmod 0644 /etc/yum.repos.d/quay_image.repo
+sudo restorecon -v /etc/yum.repos.d/quay_image.repo
+
 # Need to install python and pip modules in the same way the bootstrap.yaml would do
 # for consistency. Need the awscli to associate the EIP address in cloud-init
-dnf -y install python38
+dnf -y install ansible-core python39
 
+echo '*** Installing Base Dependencies... ***'
 # Run these commands as the ec2-user since the build will install these
 # dependencies for the ec2-user as well which should save time and not install
 # them twice
 sudo -u ec2-user pip3 install --user --upgrade pip
 sudo -u ec2-user pip3 install --user --upgrade wheel
 sudo -u ec2-user pip3 install --user --upgrade jinja2 awscli boto3 openshift jmespath packaging resolvelib
+sudo -u ec2-user ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes
+sudo -u ec2-user ansible-galaxy role install --force redhatofficial.rhel8_stig
 
+echo '*** Associating Elastic IP Address with instance... ***'
+# Determine what region the instance is in
 export AWS_DEFAULT_REGION=$(curl http://169.254.169.254/latest/meta-data/placement/region/)
 
+# Determine instance ID
 sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 describe-instances \
   --instance-ids $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") 2>&1 | tee -a "${LOG}"
 
+# Associate Elastic IP Address with the instance
 sudo AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} -u ec2-user /home/ec2-user/.local/bin/aws ec2 associate-address \
   --instance-id $(curl -s "http://169.254.169.254/latest/meta-data/instance-id") \
   --allocation-id eipalloc-abc123 2>&1 | tee -a "${LOG}"
+} 2>&1 >> "${LOG}"
 
 exit 0
