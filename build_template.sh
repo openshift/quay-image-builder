@@ -46,8 +46,10 @@ fi
 # Obtain the IP address associated with the EIP Allocation ID
 echo "Get EIP Address"
 export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
-rm -f cloud-config.sh
-sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > cloud-config.sh
+rm -f "${USER_DATA_FILE}"
+sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > "${USER_DATA_FILE}"
+sed -e '/CDN_PEM_CONTENT/ {' -e 'r rh-cdn.pem' -e 'd' -e '}' -i "${USER_DATA_FILE}"
+sed -e '/YUM_REPO_CONTENT/ {' -e 'r quay_image.repo' -e 'd' -e '}' -i "${USER_DATA_FILE}"
 chmod 0755 cloud-config.sh
 
 if [ -z $DEFAULT_VPC_ID ];
