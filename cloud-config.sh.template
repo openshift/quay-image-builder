@@ -20,8 +20,11 @@ chage -M 99999 root
 sudo sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/*.repo
 
 sudo mkdir /tmp/key
+
+# Ensure a newline after content so that EOF does not end up on a line with content if the content is not terminated by a newline
 cat << 'EOF' > /tmp/rh-cdn.pem
 CDN_PEM_CONTENT
+
 EOF
 
 sudo mv /tmp/rh-cdn.pem /tmp/key/rh-cdn.pem
@@ -30,8 +33,10 @@ sudo chown root.root /tmp/key/rh-cdn.pem
 sudo chmod 0644 /tmp/key/rh-cdn.pem
 sudo restorecon -v /tmp/key/rh-cdn.pem
 
+# Ensure a newline after content so that EOF does not end up on a line with content if the content is not terminated by a newline
 cat << 'EOF' > /tmp/quay_image.repo
 YUM_REPO_CONTENT
+
 EOF
 
 sudo mv /tmp/quay_image.repo /etc/yum.repos.d/quay_image.repo
