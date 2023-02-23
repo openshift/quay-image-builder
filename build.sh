@@ -103,7 +103,17 @@ fi
 # it can take for the AMI to become ready in the AWS API/Console
 export AWS_MAX_ATTEMPTS="240"
 export AWS_POLL_DELAY_SECONDS="30"
+export PACKER_ARGS=""
+export SSH_TIMEOUT="6m"
 
-/usr/bin/packer build -machine-readable ${PACKER_TEMPLATE} | tee packer.log
+if [[ "${PACKER_DEBUG}" == "true" ]]; then
+  PACKER_ARGS="-debug"
+  export SSH_TIMEOUT="30m"
+  echo "RUNNING IN DEBUG MODE; SSH TIMEOUT IS SET TO 30m TO ALLOW REMOTE ANALYSIS"
+  echo "PACKER WILL WRITE SSH KEYS TO WORKSPACE"
+fi
+
+
+/usr/bin/packer build ${PACKER_ARGS} -machine-readable ${PACKER_TEMPLATE} | tee packer.log
 
 exit 0

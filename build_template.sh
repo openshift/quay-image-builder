@@ -46,8 +46,10 @@ fi
 # Obtain the IP address associated with the EIP Allocation ID
 echo "Get EIP Address"
 export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
-rm -f cloud-config.sh
-sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > cloud-config.sh
+rm -f "${USER_DATA_FILE}"
+sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > "${USER_DATA_FILE}"
+sed -e '/CDN_PEM_CONTENT/ {' -e 'r rh-cdn.pem' -e 'd' -e '}' -i "${USER_DATA_FILE}"
+sed -e '/YUM_REPO_CONTENT/ {' -e 'r template_image.repo' -e 'd' -e '}' -i "${USER_DATA_FILE}"
 chmod 0755 cloud-config.sh
 
 if [ -z $DEFAULT_VPC_ID ];
@@ -77,7 +79,16 @@ fi
 # it can take for the AMI to become ready in the AWS API/Console
 export AWS_MAX_ATTEMPTS="240"
 export AWS_POLL_DELAY_SECONDS="30"
+export PACKER_ARGS=""
+export SSH_TIMEOUT="6m"
 
-/usr/bin/packer build ${PACKER_TEMPLATE} | tee packer_template.log
+if [[ "${PACKER_DEBUG}" == "true" ]]; then
+  PACKER_ARGS="-debug"
+  export SSH_TIMEOUT="30m"
+  echo "RUNNING IN DEBUG MODE; SSH TIMEOUT IS SET TO 30m TO ALLOW REMOTE ANALYSIS"
+  echo "PACKER WILL WRITE SSH KEYS TO WORKSPACE"
+fi
+
+/usr/bin/packer build ${PACKER_ARGS} ${PACKER_TEMPLATE} | tee packer_template.log
 
 exit 0
