@@ -49,7 +49,7 @@ export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | 
 rm -f "${USER_DATA_FILE}"
 sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > "${USER_DATA_FILE}"
 sed -e '/CDN_PEM_CONTENT/ {' -e 'r rh-cdn.pem' -e 'd' -e '}' -i "${USER_DATA_FILE}"
-sed -e '/YUM_REPO_CONTENT/ {' -e 'r quay_image.repo' -e 'd' -e '}' -i "${USER_DATA_FILE}"
+sed -e '/YUM_REPO_CONTENT/ {' -e 'r template_image.repo' -e 'd' -e '}' -i "${USER_DATA_FILE}"
 chmod 0755 cloud-config.sh
 
 if [ -z $DEFAULT_VPC_ID ];
