@@ -20,6 +20,7 @@
     "imageset_config_template": "{{env `IMAGESET_CONFIG_TEMPLATE`}}",
     "user_data_file": "{{env `USER_DATA_FILE`}}",
     "ssh_host": "{{env `EIP_ADDRESS`}}",
+    "ssh_timeout": "{{env `SSH_TIMEOUT`}}",
     "iam_instance_profile": "{{env `IAM_INSTANCE_PROFILE`}}"
   },
   "builders": [{
@@ -37,6 +38,7 @@
     "user_data_file": "{{ user `user_data_file` }}",
     "iam_instance_profile": "{{ user `iam_instance_profile` }}",
     "ssh_host": "{{ user `ssh_host` }}",
+    "ssh_timeout": "{{ user `ssh_timeout` }}",
     "ami_virtualization_type": "hvm",
     "ami_block_device_mappings": [
       {
