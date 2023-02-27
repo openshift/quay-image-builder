@@ -12,7 +12,7 @@ export AWS_ZONE="${AWS_ZONE:-c}"
 export REDHAT_ID="${REDHAT_ID:-309956199498}"
 
 # Current RHEL version to build with
-export RHEL_VER="${RHEL_VER:-8.6}"
+export RHEL_VER="${RHEL_VER:-8.7}"
 
 # Full OpenShift Version; i.e 4.11.8
 export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"
