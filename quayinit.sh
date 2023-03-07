@@ -12,6 +12,12 @@ echo "Installing quay mirror registry" >> "${LOG_FILE}"
 export HOME="/root"
 export USER="root"
 
+# STIG hardening makes the umask for root 0077
+# quay mirror registry will fail to launch when installed with umask 0077
+# Make current session and all other sessions for root use umask 0022
+# as ansible may cause other login sessions we need to add it to /root/.bashrc
+echo 'umask 0022' >> /root/.bashrc
+umask 0022
 /usr/local/bin/mirror-registry install --verbose --quayRoot /opt/quay/ | tee -a "${LOG_FILE}"
 
 # Remove any existing quay certificate
@@ -47,5 +53,8 @@ date >> "${LOG_FILE}"
 
 # Ensure quay init does not run again
 touch /etc/sysconfig/rh-quay-firstboot
+
+# Set the default umask back
+sed -i '/umask.*/d' /root/.bashrc
 
 exit 0

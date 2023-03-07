@@ -8,7 +8,8 @@ IMG="registry.redhat.io/redhat/${INDEX}-operator-index:v${OCP_MAJ_VER}"
 echo IMG=${IMG}
 
 echo "Creating new imageset-config.yaml..."
-cp imageset-config.yaml imageset-config.yaml.new
+rm -f imageset-config.yaml.processed
+cp imageset-config.yaml imageset-config.yaml.processed
 
 for op in $(yq -r '.mirror.operators[0].packages[].name' imageset-config.yaml)
 do
@@ -23,10 +24,9 @@ do
                  --catalog=${IMG} --package=${op} \
                  --channel=${DEF_CHANNEL} 2>/dev/null | grep -v VERSIONS | tail -1)
 
-  sed -i "s|${op}-CHANNEL|${DEF_CHANNEL}|" imageset-config.yaml.new
-  sed -i "s|${op}-VERSION|${LATEST_VER}|" imageset-config.yaml.new
+  sed -i "s|${op}-CHANNEL|${DEF_CHANNEL}|" imageset-config.yaml.processed
+  sed -i "s|${op}-VERSION|${LATEST_VER}|" imageset-config.yaml.processed
 
 done
 
-mv imageset-config.yaml.new imageset-config.yaml.processed
 echo "Processing complete. Created imageset-config.yaml.processed"

@@ -17,7 +17,6 @@
     "ocp_maj_ver": "{{env `OCP_MAJ_VER`}}",
     "ocp_min_ver": "{{env `OCP_MIN_VER`}}",
     "ocp_max_ver": "{{env `OCP_MAX_VER`}}",
-    "imageset_config_template": "{{env `IMAGESET_CONFIG_TEMPLATE`}}",
     "user_data_file": "{{env `USER_DATA_FILE`}}",
     "ssh_host": "{{env `EIP_ADDRESS`}}",
     "ssh_timeout": "{{env `SSH_TIMEOUT`}}",
@@ -43,7 +42,7 @@
     "ami_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 50,
+        "volume_size": 100,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": true
@@ -52,7 +51,7 @@
     "launch_block_device_mappings": [
       {
         "device_name": "/dev/sda1",
-        "volume_size": 50,
+        "volume_size": 100,
         "encrypted": false,
         "volume_type": "gp2",
         "delete_on_termination": true
@@ -109,7 +108,7 @@
     },
     {
       "type": "file",
-      "source": "{{user `imageset_config_template`}}",
+      "source": "imageset-config.yaml.processed",
       "destination": "/home/ec2-user/imageset-config.yaml"
     },
     {
