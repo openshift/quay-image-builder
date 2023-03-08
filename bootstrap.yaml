@@ -20,7 +20,6 @@
       become: true
       shell: dnf clean all
 
-    # TODO: Commented out for testing
     - name: Update all packages
       become: true
       ansible.builtin.dnf:
@@ -41,6 +40,7 @@
           - vim
           - jq
           - mlocate
+          - openshift4-aws-iso
 
     - name: Enable firewalld service
       become: true
@@ -137,16 +137,6 @@
       file:
         path: "{{ quay_root }}"
         state: directory
-
-    - name: Create directory for git clone
-      file:
-        path: "{{ ansible_env.HOME }}/openshift4-c2s"
-        state: directory
-
-    - name: Read-write git checkout from github
-      ansible.builtin.git:
-        repo: https://github.com/openshift/c2s-install.git
-        dest: "{{ ansible_env.HOME }}/openshift4-c2s"
 
     - name: Create containers directory
       file:
