@@ -4,6 +4,7 @@ DEF_OCP_VER=4.12.3
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
 export PULL_SECRET="${PULL_SECRET:-${HOME}/pull-secret.txt}"
+export IMAGESET_CONFIG_TEMPLATE="${IMAGESET_CONFIG_TEMPLATE:-imageset-config.yaml}"
 
 # Use zone c for builds. Change to a different zone for your region if needed
 export AWS_ZONE="${AWS_ZONE:-c}"
@@ -20,6 +21,8 @@ export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"
 
 # Major OpenShift Version; i.e 4.11
 export OCP_MAJ_VER=$(echo "${OCP_VER}" | awk -F\. '{print $1"."$2}')
+
+export CATALOG_IMG="registry.redhat.io/redhat/redhat-operator-index:v${OCP_MAJ_VER}"
 
 # By default these are equal which mirrors a single OpenShift Version
 # Setting them to different values; i.e 4.11.1 and 4.11.5
@@ -66,14 +69,45 @@ then
   exit 1
 fi
 
+###########################################################################################################
+echo "Creating new imageset-config.yaml..."
+rm -f imageset-config.yaml.processed
+cp "${IMAGESET_CONFIG_TEMPLATE}"  imageset-config.yaml.processed
+  
+for op in $(yq -r '.mirror.operators[0].packages[].name' imageset-config.yaml.processed)
+do
+  echo "Processing operator: ${op}..."
+  
+  DEF_CHANNEL=$(oc-mirror list operators \
+                  --catalog=${CATALOG_IMG} \
+                  --package=${op} \
+                  | grep -A 1 'DEFAULT CHANNEL' | tail -1 | awk '{print $NF}')
+
+  LATEST_VER=$(oc-mirror list operators \
+                 --catalog=${CATALOG_IMG} --package=${op} \
+                 --channel=${DEF_CHANNEL} 2>/dev/null | grep -v VERSIONS | tail -1)
+  
+  sed -i "s|${op}-CHANNEL|${DEF_CHANNEL}|" imageset-config.yaml.processed
+  sed -i "s|${op}-VERSION|${LATEST_VER}|" imageset-config.yaml.processed
+  
+done
+############################################################################################################
+
 # Obtain the IP address associated with the EIP Allocation ID
 echo "Get EIP Address"
 export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
 rm -f "${USER_DATA_FILE}"
+# Set EIP address in cloud init
 sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > "${USER_DATA_FILE}"
+# Set CDN PEM Content in cloud init
 sed -e '/CDN_PEM_CONTENT/ {' -e 'r rh-cdn.pem' -e 'd' -e '}' -i "${USER_DATA_FILE}"
+# Set Yum repo content in cloud init
 sed -e '/YUM_REPO_CONTENT/ {' -e 'r quay_image.repo' -e 'd' -e '}' -i "${USER_DATA_FILE}"
+# Set OCP versions in cloud init
 sed -i "s|OCP_MAJ_VER|${OCP_MAJ_VER}|g" "${USER_DATA_FILE}"
+sed -i "s|OCP_MIN_VER|${OCP_MIN_VER}|g" "${USER_DATA_FILE}"
+sed -i "s|OCP_MAX_VER|${OCP_MAX_VER}|g" "${USER_DATA_FILE}"
+
 
 chmod 0755 cloud-config.sh
 
