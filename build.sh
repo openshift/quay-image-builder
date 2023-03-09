@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-DEF_OCP_VER=4.11.8
+DEF_OCP_VER=4.12.3
 
 export PACKER_TEMPLATE="aws-rhel8-quay.json"
 export PULL_SECRET="${PULL_SECRET:-${HOME}/pull-secret.txt}"
@@ -12,7 +12,8 @@ export AWS_ZONE="${AWS_ZONE:-c}"
 export REDHAT_ID="${REDHAT_ID:-309956199498}"
 
 # Current RHEL version to build with
-export RHEL_VER="${RHEL_VER:-8.6}"
+export RHEL_VER="${RHEL_VER:-8.7}"
+export OS_VER="${RHEL_VER:0:1}"
 
 # Full OpenShift Version; i.e 4.11.8
 export OCP_VER="${OCP_VER:-${DEF_OCP_VER}}"

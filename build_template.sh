@@ -10,6 +10,7 @@ export REDHAT_ID="${REDHAT_ID:-309956199498}"
 
 # Current RHEL version to build with
 export RHEL_VER="${RHEL_VER:-8.7}"
+export OS_VER="${RHEL_VER:0:1}"
 
 # AWS EIP Configuration
 export USER_DATA_FILE="cloud-config.sh"
