@@ -25,8 +25,8 @@
   "builders": [{
     "access_key": "{{user `aws_access_key`}}",
     "secret_key": "{{user `aws_secret_key`}}",
-    "ami_name": "Quay Registry for OCP4 {{user `ocp_ver`}} {{isotime \"2006-01-02-150405\"}}",
-    "ami_description": "Quay Registry for OCP4 {{user `ocp_ver`}} {{isotime \"2006-01-02-150405\"}}",
+    "ami_name": "OCP-Content-{{user `ocp_max_ver`}}-{{isotime \"2006-01-02-150405\"}}",
+    "ami_description": "OCP-Content-{{user `ocp_max_ver`}}-{{isotime \"2006-01-02-150405\"}}",
     "instance_type": "m5.xlarge",
     "source_ami": "{{user `source_ami`}}",
     "type": "amazon-ebs",
