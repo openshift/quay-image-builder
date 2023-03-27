@@ -177,3 +177,15 @@
         path: /home/ec2-user/imageset-config.yaml
         regexp: DATA_TMP
         replace: "{{ oc_mirror_dir }}"
+
+    - name: Install python modules required by openshift4-aws-iso package
+      ansible.builtin.pip:
+        requirements: /usr/share/openshift4-aws-iso/playbooks/requirements.txt
+        extra_args: "--user"
+
+    # Note: Should be able to install required roles this way but task usually fails
+    # TODO: Determine why this task does not work correctly
+    #- name: Install collections and roles for the openshift4-aws-iso package
+    #  community.general.ansible_galaxy_install:
+    #    type: both
+    #    requirements_file: /usr/share/openshift4-aws-iso/playbooks/requirements.yml
