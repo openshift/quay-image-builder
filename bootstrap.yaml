@@ -180,7 +180,7 @@
 
     - name: Install python modules required by openshift4-aws-iso package
       ansible.builtin.pip:
-        requirements: /usr/share/openshift4-aws-iso/playbooks/requirements.txt
+        requirements: /usr/share/openshift4-aws-iso/requirements.txt
         extra_args: "--user"
 
     # Note: Should be able to install required roles this way but task usually fails
