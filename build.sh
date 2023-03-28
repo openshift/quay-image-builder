@@ -109,7 +109,7 @@ sed -i "s|OCP_MIN_VER|${OCP_MIN_VER}|g" "${USER_DATA_FILE}"
 sed -i "s|OCP_MAX_VER|${OCP_MAX_VER}|g" "${USER_DATA_FILE}"
 
 
-chmod 0755 cloud-config.sh
+chmod 0755 ${USER_DATA_FILE}
 
 if [ -z $DEFAULT_VPC_ID ];
 then
