@@ -183,6 +183,12 @@
         requirements: /usr/share/openshift4-aws-iso/requirements.txt
         extra_args: "--user"
 
+    - name: Touch file to block quay init script from launching until AMI reaches final location
+      become: true
+      ansible.builtin.file:
+        path: /etc/sysconfig/rh-quay-firstboot
+        state: touch
+
     # Note: Should be able to install required roles this way but task usually fails
     # TODO: Determine why this task does not work correctly
     #- name: Install collections and roles for the openshift4-aws-iso package
