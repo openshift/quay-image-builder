@@ -52,11 +52,14 @@
     - name: Configure firewall ports
       become: true
       ansible.posix.firewalld:
-        port: "8443/tcp"
+        port: "{{ item }}"
         permanent: true
         immediate: true
         state: enabled
         zone: "public"
+      loop:
+        - "8443/tcp"
+        - "8080/tcp"
 
     - name: Pull OCP Dependencies
       become: true
@@ -188,6 +191,52 @@
       ansible.builtin.file:
         path: /etc/sysconfig/rh-quay-firstboot
         state: touch
+
+    - name: Create location for openshift docs pod to output logs
+      become: true
+      ansible.builtin.file:
+        path: /var/log/container
+        owner: ec2-user
+        group: ec2-user
+        mode: 0755
+        state: directory
+
+    - name: Create systemd unit file location for ec2-user
+      ansible.builtin.file:
+        path: /home/ec2-user/.config/systemd/user
+        state: directory
+
+    - name: Setup docs pod to run on system boot
+      containers.podman.podman_container:
+        name: openshift-docs
+        image: quay.io/danclark/openshift-docs:latest
+        log_options: path=/var/log/container/mycontainer.json
+        log_driver: k8s-file
+        state: present
+        recreate: yes
+        ports:
+          - "8443:8443"
+          - "8080:8080"
+        generate_systemd:
+          path: /home/ec2-user/.config/systemd/user/
+          restart_policy: always
+          time: 120
+          names: true
+          wants: network.target
+          after: network-online.target
+
+    - name: Reload systemd user services
+      ansible.builtin.systemd:
+        scope: user
+        daemon_reload: true
+
+    - name: Enable openshift-docs httpd systemd user service
+      ansible.builtin.systemd:
+        name: container-openshift-docs.service
+        state: started
+        enabled: true
+        masked: false
+        scope: user
 
     # Note: Should be able to install required roles this way but task usually fails
     # TODO: Determine why this task does not work correctly
