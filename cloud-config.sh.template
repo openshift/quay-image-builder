@@ -54,7 +54,7 @@ echo '*** Installing Base Dependencies... ***'
 # them twice
 sudo -u ec2-user pip3 install --user --upgrade pip
 sudo -u ec2-user pip3 install --user --upgrade wheel
-sudo -u ec2-user pip3 install --user --upgrade jinja2 awscli boto3 openshift jmespath packaging resolvelib
+sudo -u ec2-user pip3 install --user --upgrade jinja2 awscli boto3 openshift jmespath packaging resolvelib yq
 sudo -u ec2-user ansible-galaxy collection install --upgrade amazon.aws community.aws community.crypto containers.podman community.general ansible.posix community.kubernetes
 sudo -u ec2-user ansible-galaxy role install --force redhatofficial.rhel8_stig
 
