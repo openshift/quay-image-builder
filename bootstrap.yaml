@@ -59,6 +59,7 @@
         zone: "public"
       loop:
         - "8443/tcp"
+        - "9443/tcp"
         - "8080/tcp"
 
     - name: Pull OCP Dependencies
@@ -215,7 +216,7 @@
         state: present
         recreate: yes
         ports:
-          - "8443:8443"
+          - "9443:8443"
           - "8080:8080"
         generate_systemd:
           path: /home/ec2-user/.config/systemd/user/
