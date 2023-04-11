@@ -69,15 +69,31 @@ then
   exit 1
 fi
 
+if [ ! -f ${PULL_SECRET} ]
+then
+  echo "Could not find pull secret file at path: ${PULL_SECRET}"
+  exit 1
+fi
+
+# very simple check to see if we're running in a container
+# https://github.com/containers/podman/issues/3586#issuecomment-661918679
+if [ -n ${container} ]
+then
+  echo "Detected running from a container, copying the pull secret ${PULL_SECRET} to ~/.docker/config.json ..."
+  # need to copy the pull secret to location where oc-mirror can use it
+  mkdir -p ~/.docker
+  cp ${PULL_SECRET} ~/.docker/config.json
+fi
+
 ###########################################################################################################
 echo "Creating new imageset-config.yaml..."
 rm -f imageset-config.yaml.processed
 cp "${IMAGESET_CONFIG_TEMPLATE}"  imageset-config.yaml.processed
-  
+
 for op in $(yq -r '.mirror.operators[0].packages[].name' imageset-config.yaml.processed)
 do
   echo "Processing operator: ${op}..."
-  
+
   DEF_CHANNEL=$(oc-mirror list operators \
                   --catalog=${CATALOG_IMG} \
                   --package=${op} \
@@ -86,10 +102,10 @@ do
   LATEST_VER=$(oc-mirror list operators \
                  --catalog=${CATALOG_IMG} --package=${op} \
                  --channel=${DEF_CHANNEL} 2>/dev/null | grep -v VERSIONS | tail -1)
-  
+
   sed -i "s|${op}-CHANNEL|${DEF_CHANNEL}|" imageset-config.yaml.processed
   sed -i "s|${op}-VERSION|${LATEST_VER}|" imageset-config.yaml.processed
-  
+
 done
 ############################################################################################################
 
