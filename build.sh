@@ -164,7 +164,9 @@ if [[ "${PACKER_DEBUG}" == "true" ]]; then
   echo "PACKER WILL WRITE SSH KEYS TO WORKSPACE"
 fi
 
-
+echo "Running packer..."
 /usr/bin/packer build ${PACKER_ARGS} -machine-readable ${PACKER_TEMPLATE} | tee packer.log
 
+
+echo "Build completed successfully"
 exit 0
