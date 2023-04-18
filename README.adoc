@@ -21,6 +21,12 @@ sudo dnf -y install packer
 sudo dnf install -y ansible-core
 ----
 
+. Install skopeo
++
+----
+sudo dnf install -y skopeo
+----
+
 == Building with packer
 
 . Download your pull secret from https://console.redhat.com/openshift/install/pull-secret

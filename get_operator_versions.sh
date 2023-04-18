@@ -7,6 +7,21 @@ IMG="registry.redhat.io/redhat/${INDEX}-operator-index:v${OCP_MAJ_VER}"
 
 echo IMG=${IMG}
 
+echo "Validating pull secret access to registry.redhat.io..."
+# login using existing credentials to registry, ignoring output.
+# Any prompt for input will get /dev/null which will fail login and return non-zero code.
+set +e
+skopeo login registry.redhat.io < /dev/null &> /dev/null
+if [ $? -eq 0 ]
+then
+  echo "Logged into registry.redhat.io successfully with provided pull secret"
+else
+  echo "ERROR: Pull secret file did not login to registry.redhat.io successfully"
+  exit 1
+fi
+set -e
+
+
 echo "Creating new imageset-config.yaml..."
 rm -f imageset-config.yaml.processed
 cp imageset-config.yaml imageset-config.yaml.processed
