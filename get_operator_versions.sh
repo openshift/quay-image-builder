@@ -11,10 +11,10 @@ echo "Validating pull secret access to registry.redhat.io..."
 # login using existing credentials to registry, ignoring output.
 # Any prompt for input will get /dev/null which will fail login and return non-zero code.
 set +e
-skopeo login registry.redhat.io < /dev/null &> /dev/null
+skopeo inspect docker://${CATALOG_IMG} > /dev/null
 if [ $? -eq 0 ]
 then
-  echo "Logged into registry.redhat.io successfully with provided pull secret"
+  echo "Verified registry credentials to registry.redhat.io successfully"
 else
   echo "ERROR: Pull secret file did not login to registry.redhat.io successfully"
   echo "Pull secret contains credentials for the following registries:"
