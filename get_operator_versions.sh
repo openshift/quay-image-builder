@@ -17,6 +17,8 @@ then
   echo "Logged into registry.redhat.io successfully with provided pull secret"
 else
   echo "ERROR: Pull secret file did not login to registry.redhat.io successfully"
+  echo "Pull secret contains credentials for the following registries:"
+  echo "$(jq -r '.auths | keys[]' ${PULL_SECRET})"
   exit 1
 fi
 set -e
@@ -30,11 +32,13 @@ for op in $(yq -r '.mirror.operators[0].packages[].name' imageset-config.yaml)
 do
   echo "Processing operator: ${op}..."
 
+  echo "  getting default channel name..."
   DEF_CHANNEL=$(oc-mirror list operators \
                   --catalog=${IMG} \
                   --package=${op} \
                   | grep -A 1 'DEFAULT CHANNEL' | tail -1 | awk '{print $NF}')
 
+  echo "  getting latest version from channel..."
   LATEST_VER=$(oc-mirror list operators \
                  --catalog=${IMG} --package=${op} \
                  --channel=${DEF_CHANNEL} 2>/dev/null | grep -v VERSIONS | tail -1)
