@@ -113,11 +113,6 @@
     },
     {
       "type": "file",
-      "source": "playbooks",
-      "destination": "/home/ec2-user"
-    },
-    {
-      "type": "file",
       "source": "quayinit.service",
       "destination": "/tmp/quayinit.service"
     },
@@ -167,8 +162,6 @@
         "set -ex",
         "mkdir -p ${XDG_RUNTIME_DIR}/containers || true",
         "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
-        "echo 'Run hardening playbook if AMI has not already been hardened'",
-        "if [ ! -e /etc/sysconfig/rh-quay-hardened ]; then ansible-playbook /home/ec2-user/playbooks/harden_quay.yaml; fi",
         "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --continue-on-error file://archives || true"
       ]
     },
