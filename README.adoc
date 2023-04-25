@@ -40,6 +40,10 @@ OCP_MAJ_VER=4.10 INDEX=redhat ./get_operator_versions.sh
 mv imageset-config.yaml.processed imageset-config-templates/${OCP_MAJ_VER}-$(date "+%Y%m%d").yaml
 ----
 
+. Create an IAM user, and assign the policy defined in `packer_iam.json`
+
+. Create an EIP allocation, but leave the EIP unassigned. Assign a name of `ocp-content-ami-builder`
+
 . Set AWS environment and run the build
 +
 ----
@@ -69,6 +73,7 @@ OCP_VER=4.10.36 IMAGESET_CONFIG_TEMPLATE=imageset-config-templates/4.10-20221025
 | DEFAULT_VPC_ID | Dynamic Lookup | VPC to launch quay AMI in with packer
 | SUBNET_ID | Dynamic Lookup | Subnet to launch quay AMI in with packer
 | SOURCE_AMI | Dynamic Lookup | AMI to build quay on top of
+| REPLACE_AMI_YUM_CONFIG | true | Flag for whether to replace AMI yum config in cloud init
 | AWS_MAX_ATTEMPTS | 120 | Max packer attempts when waiting for AMI to become ready
 | AWS_POLL_DELAY_SECONDS | 60 | Delay in seconds between checking if AMI is ready
 |===

@@ -131,9 +131,18 @@ done
 # Obtain the IP address associated with the EIP Allocation ID
 echo "Get EIP Address"
 export EIP_ADDRESS=$(aws ec2 describe-addresses --allocation-ids ${EIP_ALLOC} | jq -r '.Addresses[0].PublicIp')
+
+#
+# cloud-config.sh template processing for cloud-init
+#
+# to use the yum repos configured in the AMI by default, set this variable to "false"
+REPLACE_AMI_YUM_CONFIG="${REPLACE_AMI_YUM_CONFIG:-true}"
+
 rm -f "${USER_DATA_FILE}"
 # Set EIP address in cloud init
 sed "s|eipalloc-abc123|${EIP_ALLOC}|g" cloud-config.sh.template > "${USER_DATA_FILE}"
+# Set flag for whether to replace AMI yum config in cloud init
+sed -i "s|REPLACE_AMI_YUM_CONFIG_PLACEHOLDER|${REPLACE_AMI_YUM_CONFIG}|g" "${USER_DATA_FILE}"
 # Set CDN PEM Content in cloud init
 sed -e '/CDN_PEM_CONTENT/ {' -e 'r rh-cdn.pem' -e 'd' -e '}' -i "${USER_DATA_FILE}"
 # Set Yum repo content in cloud init
