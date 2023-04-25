@@ -12,10 +12,12 @@ function finish {
     echo "Securely shredding ${currentscript}"; shred -u ${currentscript};
 }
 
-{
-# Hardening is causing this to be an issue
-# TODO: Find hardening rule that causes this issue
-chage -M 99999 root
+# function that replaces AMI-defined yum repositories with RH CDN access
+#   via an embedded key and .repo file. Key and .repo file are in-lined
+#   in this script via the build.sh script when creating this
+#   cloud-config.sh from a template.
+function replace_yum_config {
+echo Replacing AMI yum repository configuration...
 
 sudo sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/*.repo
 
@@ -43,6 +45,24 @@ sudo mv /tmp/quay_image.repo /etc/yum.repos.d/quay_image.repo
 sudo chown root.root /etc/yum.repos.d/quay_image.repo
 sudo chmod 0644 /etc/yum.repos.d/quay_image.repo
 sudo restorecon -v /etc/yum.repos.d/quay_image.repo
+
+echo AMI yum repository configuration replaced.
+}
+
+{
+# Hardening is causing this to be an issue
+# TODO: Find hardening rule that causes this issue
+chage -M 99999 root
+
+# determine whether to replace existing AMI yum configuration
+# with a configuration that works from the build pipeline
+# The value REPLACE_AMI_YUM_CONFIG_PLACEHOLDER is replaced during
+# processing of this template.
+if [[ "REPLACE_AMI_YUM_CONFIG_PLACEHOLDER" == "true" ]]; then
+  replace_yum_config
+else
+  echo "Using existing yum configuration in the AMI"
+fi
 
 # Need to install python and pip modules in the same way the bootstrap.yaml would do
 # for consistency. Need the awscli to associate the EIP address in cloud-init
