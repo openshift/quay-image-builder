@@ -3,6 +3,8 @@
 OCP_MAJ_VER=${OCP_MAJ_VER:-4.11}
 INDEX=${INDEX:-redhat}
 
+PULL_SECRET="${PULL_SECRET:-${HOME}/pull-secret.txt}"
+
 IMG="registry.redhat.io/redhat/${INDEX}-operator-index:v${OCP_MAJ_VER}"
 
 echo IMG=${IMG}
@@ -11,7 +13,7 @@ echo "Validating pull secret access to registry.redhat.io..."
 # login using existing credentials to registry, ignoring output.
 # Any prompt for input will get /dev/null which will fail login and return non-zero code.
 set +e
-skopeo inspect --retry-times 3 docker://${CATALOG_IMG} > /dev/null
+skopeo inspect --retry-times 3 docker://${IMG} > /dev/null
 if [ $? -eq 0 ]
 then
   echo "Verified registry credentials to registry.redhat.io successfully"
