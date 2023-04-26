@@ -39,6 +39,7 @@
           - vim
           - jq
           - mlocate
+          - pigz
 
     - name: Pull OCP Dependencies
       become: true
