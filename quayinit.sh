@@ -50,6 +50,10 @@ echo "$(date) : Importing local content archive into quay mirror registry..." >>
 
 /usr/local/bin/oc-mirror --from /home/ec2-user/archives/mirror_seq1_000000.tar docker://${HOSTNAME}:8443 | tee -a "${LOG_FILE}"
 
+# set file permissions of release-signatures to be world readable
+echo "$(date) : Set file permissions of release signatures..." >> "${LOG_FILE}"
+chmod -v 644 /oc-mirror-workspace/results-*/release-signatures/signature-sha256-*.json | tee -a "${LOG_FILE}"
+
 echo "$(date) : Completed import of local content archive" >> "${LOG_FILE}"
 
 # Ensure quay init does not run again
