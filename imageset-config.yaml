@@ -25,11 +25,22 @@ mirror:
           channels:
             - name: compliance-operator-CHANNEL
               minVersion: compliance-operator-VERSION
+        - name: elasticsearch-operator
+          channels:
+            - name: elasticsearch-operator-CHANNEL
+              minVersion: elasticsearch-operator-VERSION
         - name: file-integrity-operator
           channels:
             - name: file-integrity-operator-CHANNEL
               minVersion: file-integrity-operator-VERSION
+        - name: loki-operator
+          channels:
+            - name: loki-operator-CHANNEL
+              minVersion: loki-operator-VERSION
         - name: rhsso-operator
           channels:
             - name: rhsso-operator-CHANNEL
               minVersion: rhsso-operator-VERSION
+  additionalimages:
+    # rhscl/postgresql-10-rhel7 is required by the rhsso-operator
+    - name: registry.redhat.io/rhscl/postgresql-10-rhel7:1-173
