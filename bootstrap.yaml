@@ -38,6 +38,8 @@
           - git
           - vim
           - jq
+          - tmux
+          - bash-completion
           - mlocate
           - pigz
 
@@ -83,6 +85,21 @@
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/openshift-client-linux-{{ ocp_max_ver }}.tar.gz"
         - "{{ mirror_uri }}/ocp/{{ ocp_max_ver }}/oc-mirror.tar.gz"
         - "{{ mirror_uri }}/pipeline/latest/tkn-linux-amd64.tar.gz"
+
+    - name: Generate oc bash completion file
+      ansible.builtin.shell:
+        cmd: /usr/local/bin/oc completion bash > /etc/bash_completion.d/oc
+        creates: /etc/bash_completion.d/oc
+      become: true
+
+    - name: Set permissions on oc bash completion file
+      ansible.builtin.file:
+        path: /etc/bash_completion.d/oc
+        owner: root
+        group: root
+        mode: '0644'
+        state: file
+      become: true
 
     - name: Change file ownership, group and permissions
       become: true
