@@ -162,7 +162,7 @@
         "set -ex",
         "mkdir -p ${XDG_RUNTIME_DIR}/containers || true",
         "cat /tmp/pull-secret.txt > ${XDG_RUNTIME_DIR}/containers/auth.json",
-        "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml --continue-on-error file://archives || true"
+        "/usr/local/bin/oc-mirror --config /home/ec2-user/imageset-config.yaml file://archives"
       ]
     },
     {
